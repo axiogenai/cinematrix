@@ -80,8 +80,8 @@ class GenerateStoryboardRequest(BaseModel):
 
 class RenderRequest(BaseModel):
     storyboard: Dict[str, Any]
-    # comfyui is actual generative video; chromium/opencv are explicitly motion-graphics modes.
-    engine: str = "comfyui"
+    # Default to the active, zero-dependency Chromium 1080p motion cinema engine
+    engine: str = "chromium"
 
 
 @app.get("/api/status")

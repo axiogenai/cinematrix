@@ -351,6 +351,8 @@ function setupCustomVideoPlayer() {
   });
 }
 
+let systemStatusCache = null;
+
 // -------------------------------------------------------------
 // SYSTEM STATUS CHECK
 // -------------------------------------------------------------
@@ -358,12 +360,23 @@ async function checkSystemStatus() {
   try {
     const res = await fetch('/api/status');
     const data = await res.json();
+    systemStatusCache = data;
+
     if (data.storyboard_ai_configured) {
       directorStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-sageMuted';
       directorStatusText.textContent = `Director Ready (${data.storyboard_model || 'gpt-oss-120b'})`;
     } else {
       directorStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-brickMuted';
       directorStatusText.textContent = 'Director Key Missing';
+    }
+
+    const comfyOpt = document.querySelector('#engineSelect option[value="comfyui"]');
+    if (comfyOpt) {
+      if (data.video_generation && data.video_generation.configured && data.video_generation.reachable) {
+        comfyOpt.textContent = 'ComfyUI Neural Diffusion (Local Models) [ONLINE]';
+      } else {
+        comfyOpt.textContent = 'ComfyUI Neural Diffusion [OFFLINE - Requires Workflow in .env]';
+      }
     }
   } catch (err) {
     directorStatusDot.className = 'w-1.5 h-1.5 rounded-full bg-brickMuted';
@@ -932,7 +945,25 @@ async function handleStartRender() {
   currentStoryboard.mood = moodSelect.value;
   currentStoryboard.fps = parseInt(fpsSelect.value) || 24;
 
-  const selectedEngine = engineSelect ? engineSelect.value : 'chromium';
+  let selectedEngine = engineSelect ? engineSelect.value : 'chromium';
+
+  // If ComfyUI is selected but unconfigured, offer to switch to Chromium 1080p Motion Engine
+  if (selectedEngine === 'comfyui') {
+    const isConfigured = systemStatusCache && systemStatusCache.video_generation && systemStatusCache.video_generation.configured && systemStatusCache.video_generation.reachable;
+    if (!isConfigured) {
+      const switchEngine = confirm(
+        'ComfyUI Neural Diffusion is not currently running with a local model workflow in .env.\n\n' +
+        'Would you like to render your 1080p master video using the active Chromium Motion Cinema Engine instead?'
+      );
+      if (switchEngine) {
+        selectedEngine = 'chromium';
+        if (engineSelect) engineSelect.value = 'chromium';
+      } else {
+        logToTerminal('Render canceled: ComfyUI requires running server and COMFYUI_WORKFLOW_PATH.', 'warn');
+        return;
+      }
+    }
+  }
 
   startRenderBtn.disabled = true;
   startRenderBtn.innerHTML = `
