@@ -1,200 +1,264 @@
 import os
-import sys
 import glob
 import time
 import uuid
 import json
-import asyncio
-from typing import Dict, Any, Optional
+import re
+from typing import Dict, Any
 from threading import Thread
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+
+def _load_local_env_file():
+    """Load a project .env without overriding explicitly exported process variables."""
+    env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.isfile(env_path):
+        return
+    try:
+        with open(env_path, "r", encoding="utf-8-sig") as env_file:
+            for raw_line in env_file:
+                line = raw_line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                value = value.strip()
+                if value.startswith(("'", '"')) and len(value) >= 2 and value[-1] == value[0]:
+                    value = value[1:-1]
+                if key and key.replace("_", "").isalnum():
+                    os.environ.setdefault(key, value)
+    except OSError:
+        # A missing/unreadable .env is handled by explicit configuration errors later.
+        return
+
+
+_load_local_env_file()
+
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from core.render_bridge import DynamicChromiumVideoEngine
 from core.video_engine import VideoEngine as OpenCVVideoEngine
-from ai.groq_director import GroqCreativeDirector
+from core.comfyui_video_engine import ComfyUIVideoEngine, VideoGenerationError
+from ai.groq_director import GroqCreativeDirector, CreativeDirectorError
 
-# Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 PRESETS_DIR = os.path.join(BASE_DIR, "presets")
-
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-STATIC_DIR = os.path.join(BASE_DIR, "static")
-PRESETS_DIR = os.path.join(BASE_DIR, "presets")
 
-app = FastAPI(title="CineMatrix Media Studio API", version="2.0.0")
-
+app = FastAPI(title="CineMatrix Media Studio API", version="3.1.0")
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("CINEMATRIX_ALLOWED_ORIGINS", "http://127.0.0.1:8090,http://localhost:8090").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=allowed_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
-# Services
 groq_director = GroqCreativeDirector()
 chromium_engine = DynamicChromiumVideoEngine()
 opencv_engine = OpenCVVideoEngine()
-
-# In-memory job progress tracking
+comfyui_engine = ComfyUIVideoEngine()
 RENDER_JOBS: Dict[str, Dict[str, Any]] = {}
 
+
 class GenerateStoryboardRequest(BaseModel):
-    prompt: str
+    prompt: str = Field(min_length=1, max_length=12000)
     aspect_ratio: str = "16:9"
-    target_duration: float = 15.0
-    mood: str = "cinematic_tech"
+    target_duration: float = Field(default=15.0, ge=4, le=180)
+    mood: str = "cinematic"
+
 
 class RenderRequest(BaseModel):
     storyboard: Dict[str, Any]
-    engine: str = "chromium"  # "chromium" (HTML5/SVG motion) or "opencv" (100% pure Python)
+    # comfyui is actual generative video; chromium/opencv are explicitly motion-graphics modes.
+    engine: str = "comfyui"
+
 
 @app.get("/api/status")
 def get_status():
+    video_status = comfyui_engine.status()
     return {
         "status": "online",
-        "engine": "CineMatrix Pro Video Engine v2.0 (Dual Engine: Chromium SVG + Pure Python OpenCV)",
-        "groq_model": groq_director.model,
-        "groq_active": bool(groq_director.api_key),
-        "ffmpeg_path": chromium_engine.ffmpeg_path,
-        "output_count": len(glob.glob(os.path.join(OUTPUT_DIR, "*.mp4")))
+        "version": app.version,
+        "storyboard_model": groq_director.model,
+        "storyboard_ai_configured": bool(groq_director.api_key),
+        "video_generation": video_status,
+        "motion_graphics_available": True,
+        "output_count": len(glob.glob(os.path.join(OUTPUT_DIR, "*.mp4"))),
     }
+
 
 @app.get("/api/presets")
 def list_presets():
+    # Presets remain available as editable examples, not as the AI's generation strategy.
     presets = []
-    for f in glob.glob(os.path.join(PRESETS_DIR, "*.json")):
+    for filename in glob.glob(os.path.join(PRESETS_DIR, "*.json")):
         try:
-            with open(f, "r", encoding="utf-8") as pf:
-                data = json.load(pf)
-                presets.append({
-                    "id": data.get("id", os.path.basename(f).replace(".json", "")),
-                    "title": data.get("title", "Untitled Preset"),
-                    "aspect_ratio": data.get("aspect_ratio", "16:9"),
-                    "duration": sum(s.get("duration", 3.0) for s in data.get("scenes", [])),
-                    "storyboard": data
-                })
-        except Exception:
-            pass
+            with open(filename, "r", encoding="utf-8") as handle:
+                data = json.load(handle)
+            presets.append({
+                "id": data.get("id", os.path.basename(filename).replace(".json", "")),
+                "title": data.get("title", "Untitled Preset"),
+                "aspect_ratio": data.get("aspect_ratio", "16:9"),
+                "duration": sum(float(scene.get("duration", 3.0)) for scene in data.get("scenes", [])),
+                "storyboard": data,
+            })
+        except (OSError, ValueError, TypeError):
+            continue
     return {"presets": presets}
+
 
 @app.post("/api/storyboard/generate")
 def generate_storyboard(req: GenerateStoryboardRequest):
-    if not req.prompt:
-        raise HTTPException(status_code=400, detail="Prompt is required")
-
-    storyboard = groq_director.generate_storyboard(
-        prompt=req.prompt,
-        aspect_ratio=req.aspect_ratio,
-        target_duration=req.target_duration,
-        mood=req.mood
-    )
-    storyboard["id"] = f"reel_{int(time.time())}"
+    if req.aspect_ratio not in {"16:9", "9:16", "1:1"}:
+        raise HTTPException(status_code=422, detail="aspect_ratio must be 16:9, 9:16, or 1:1.")
+    try:
+        storyboard = groq_director.generate_storyboard(
+            prompt=req.prompt,
+            aspect_ratio=req.aspect_ratio,
+            target_duration=req.target_duration,
+            mood=req.mood,
+        )
+    except CreativeDirectorError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    storyboard["id"] = "film_" + uuid.uuid4().hex[:12]
     return {"success": True, "storyboard": storyboard}
 
-def run_render_worker(job_id: str, storyboard: dict, engine_name: str = "chromium"):
+
+def run_render_worker(job_id: str, storyboard: dict, engine_name: str):
     def update_progress(data: dict):
-        RENDER_JOBS[job_id].update(data)
+        if job_id in RENDER_JOBS:
+            RENDER_JOBS[job_id].update(data)
 
     try:
-        RENDER_JOBS[job_id]["status"] = "processing"
-        if engine_name == "opencv":
+        RENDER_JOBS[job_id].update({"status": "processing", "percent": 1})
+        if engine_name == "comfyui":
+            result = comfyui_engine.render_storyboard(storyboard, OUTPUT_DIR, progress_callback=update_progress)
+        elif engine_name == "opencv":
             result = opencv_engine.render_storyboard(storyboard, OUTPUT_DIR, progress_callback=update_progress)
-        else:
+        elif engine_name == "chromium":
             result = chromium_engine.render_storyboard(storyboard, OUTPUT_DIR, progress_callback=update_progress)
-            
+        else:
+            raise ValueError("Unknown rendering engine " + repr(engine_name) + ". Choose comfyui, chromium, or opencv.")
+
         RENDER_JOBS[job_id].update({
             "status": "completed",
             "percent": 100,
             "result": result,
-            "video_url": f"/output/{os.path.basename(result['output_mp4'])}",
-            "thumb_url": f"/output/{os.path.basename(result['thumbnail'])}"
+            "video_url": "/output/" + os.path.basename(result["output_mp4"]),
+            "thumb_url": "/output/" + os.path.basename(result["thumbnail"]) if result.get("thumbnail") else None,
         })
-    except Exception as e:
+    except Exception as exc:
         RENDER_JOBS[job_id].update({
             "status": "failed",
-            "error": str(e),
-            "percent": 0
+            "error": str(exc),
+            "percent": 0,
+            "message": "Generation failed. No substitute video was rendered.",
         })
+
 
 @app.post("/api/render")
 def trigger_render(req: RenderRequest):
-    sb = req.storyboard
-    if not sb.get("scenes"):
-        raise HTTPException(status_code=400, detail="Storyboard must contain at least one scene")
+    storyboard = req.storyboard
+    if not isinstance(storyboard.get("scenes"), list) or not storyboard["scenes"]:
+        raise HTTPException(status_code=400, detail="Storyboard must contain at least one shot.")
+    if len(storyboard["scenes"]) > 12:
+        raise HTTPException(status_code=400, detail="A render may contain at most 12 shots.")
+    if req.engine not in {"comfyui", "chromium", "opencv"}:
+        raise HTTPException(status_code=400, detail="Engine must be comfyui, chromium, or opencv.")
+    if req.engine == "comfyui":
+        status = comfyui_engine.status()
+        if not status["configured"] or not status["workflow_configured"]:
+            raise HTTPException(
+                status_code=503,
+                detail="Real video generation is not configured. Set COMFYUI_BASE_URL, "
+                       "COMFYUI_WORKFLOW_PATH, and COMFYUI_PROMPT_NODE_ID. See README.md. "
+                       "CineMatrix will not silently render a template instead."
+            )
+        if not status["reachable"]:
+            raise HTTPException(status_code=503, detail=status["detail"])
 
-    job_id = f"job_{uuid.uuid4().hex[:8]}"
-    sb["id"] = sb.get("id") or f"video_{int(time.time())}"
-
+    job_id = "job_" + uuid.uuid4().hex[:12]
+    raw_video_id = str(storyboard.get("id") or "film_" + uuid.uuid4().hex[:12])
+    storyboard["id"] = re.sub(r"[^A-Za-z0-9_-]", "_", raw_video_id)[:100] or "film_" + uuid.uuid4().hex[:12]
     RENDER_JOBS[job_id] = {
         "job_id": job_id,
-        "video_id": sb["id"],
+        "video_id": storyboard["id"],
         "engine": req.engine,
         "status": "queued",
         "percent": 0,
-        "message": f"Render job queued in pipeline (Engine: {req.engine})...",
-        "created_at": time.time()
+        "message": "Generation job queued.",
+        "created_at": time.time(),
     }
+    Thread(target=run_render_worker, args=(job_id, storyboard, req.engine), daemon=True).start()
+    return {"job_id": job_id, "video_id": storyboard["id"], "status": "queued"}
 
-    thread = Thread(target=run_render_worker, args=(job_id, sb, req.engine), daemon=True)
-    thread.start()
-
-    return {"job_id": job_id, "video_id": sb["id"], "status": "queued"}
 
 @app.get("/api/render/progress/{job_id}")
 @app.get("/api/jobs/{job_id}")
 def get_render_progress(job_id: str):
     if job_id not in RENDER_JOBS:
-        raise HTTPException(status_code=404, detail="Job not found")
+        raise HTTPException(status_code=404, detail="Job not found.")
     return RENDER_JOBS[job_id]
+
 
 @app.get("/api/videos")
 def list_videos():
     videos = []
-    mp4_files = sorted(glob.glob(os.path.join(OUTPUT_DIR, "*.mp4")), key=os.path.getmtime, reverse=True)
-
-    for mp4 in mp4_files:
-        basename = os.path.basename(mp4)
-        vid_id = basename.replace(".mp4", "")
-        thumb_file = os.path.join(OUTPUT_DIR, f"{vid_id}_thumb.jpg")
-        size_bytes = os.path.getsize(mp4)
-
+    for video_path in sorted(glob.glob(os.path.join(OUTPUT_DIR, "*.mp4")), key=os.path.getmtime, reverse=True):
+        basename = os.path.basename(video_path)
+        video_id = basename[:-4]
+        thumb = os.path.join(OUTPUT_DIR, video_id + "_thumb.jpg")
+        size = os.path.getsize(video_path)
         videos.append({
-            "id": vid_id,
+            "id": video_id,
             "filename": basename,
-            "video_url": f"/output/{basename}",
-            "thumb_url": f"/output/{os.path.basename(thumb_file)}" if os.path.exists(thumb_file) else None,
-            "size_bytes": size_bytes,
-            "size_formatted": f"{round(size_bytes / (1024 * 1024), 2)} MB",
-            "created_at": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(mp4)))
+            "video_url": "/output/" + basename,
+            "thumb_url": "/output/" + os.path.basename(thumb) if os.path.exists(thumb) else None,
+            "size_bytes": size,
+            "size_formatted": str(round(size / (1024 * 1024), 2)) + " MB",
+            "created_at": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(video_path))),
         })
     return {"videos": videos}
 
-# Static file routes
+
 @app.get("/output/{filename}")
 def serve_output_file(filename: str):
+    if os.path.basename(filename) != filename or filename in {".", ".."}:
+        raise HTTPException(status_code=400, detail="Invalid filename.")
     file_path = os.path.join(OUTPUT_DIR, filename)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
-    media_type = "video/mp4" if filename.endswith(".mp4") else "image/jpeg" if filename.endswith(".jpg") else "audio/wav"
-    return FileResponse(file_path, media_type=media_type)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="File not found.")
+    ext = os.path.splitext(filename)[1].lower()
+    media_types = {
+        ".mp4": "video/mp4", ".webm": "video/webm", ".mov": "video/quicktime",
+        ".mkv": "video/x-matroska", ".gif": "image/gif", ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg", ".png": "image/png", ".wav": "audio/wav",
+    }
+    return FileResponse(file_path, media_type=media_types.get(ext, "application/octet-stream"))
+
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 
 @app.get("/")
 def serve_index():
     index_file = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
-    return {"message": "CineMatrix Media Studio API is running. Build static UI in /static."}
+    return {"message": "CineMatrix Media Studio API is running."}
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("server:app", host="127.0.0.1", port=8090, reload=False)
+    uvicorn.run("server:app", host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8090")), reload=False)

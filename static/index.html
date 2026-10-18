@@ -47,10 +47,10 @@
         <span class="text-xs text-zinc-500 font-mono">v2.0 PRO</span>
       </div>
       <span class="text-zinc-700">/</span>
-      <!-- Telemetry Pill: Groq LPU -->
+      <!-- Telemetry Pill: AI creative director -->
       <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400">
         <span class="w-1.5 h-1.5 rounded-full bg-sageMuted"></span>
-        <span>Groq LPU Active (120B)</span>
+        <span>AI Creative Director</span>
       </div>
     </div>
 
@@ -99,7 +99,7 @@
         <div class="space-y-1.5">
           <label class="text-xs font-medium text-zinc-400 flex justify-between">
             <span>Video Prompt & Creative Directive</span>
-            <span class="text-[10px] text-zinc-500 font-mono">Groq LPU Prompt</span>
+            <span class="text-[10px] text-zinc-500 font-mono">Creative Brief</span>
           </label>
           <textarea id="promptInput" rows="3" class="w-full bg-obsidian border border-borderSub rounded-lg p-3 text-xs text-zinc-200 outline-none focus:border-borderFocus resize-none font-sans" placeholder="e.g. Create a 15-second cinematic product film for an AI verification engine with code showcase and benchmark telemetry..."></textarea>
           
@@ -153,15 +153,17 @@
             <span class="text-[10px] text-zinc-500 font-mono">Render Mode</span>
           </label>
           <select id="engineSelect" class="w-full bg-obsidian border border-borderSub text-xs text-zinc-300 rounded-md p-2 outline-none focus:border-borderFocus">
-            <option value="chromium" selected>Chromium SVG Stage (Agency Motion Reel — Like Axiogen Showreel)</option>
-            <option value="opencv">Pure Python OpenCV (No Browser / Direct Pixel Engine)</option>
+            <option value="comfyui" selected>Real AI Video Generation (Local ComfyUI + Open Video Model)</option>
+            <option value="chromium">Motion Graphics (HTML / SVG / Chromium)</option>
+            <option value="opencv">Procedural Pixel Graphics (OpenCV)</option>
           </select>
+          <p class="text-[10px] text-zinc-500 mt-1">Real AI footage requires a configured local ComfyUI video workflow. If unavailable, CineMatrix reports the error instead of substituting a template.</p>
         </div>
 
-        <!-- Groq Storyboard Generation Button -->
+        <!-- AI Storyboard Generation Button -->
         <button id="generateStoryboardBtn" class="w-full py-2.5 px-4 rounded-lg bg-zinc-100 hover:bg-white text-obsidian font-medium text-xs flex items-center justify-center gap-2 transition-all">
           <i data-lucide="wand-2" class="w-4 h-4"></i>
-          <span>Generate Storyboard with Groq AI</span>
+          <span>Generate Original Storyboard</span>
         </button>
 
         <!-- Storyboard Scene List -->

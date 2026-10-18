@@ -3,6 +3,7 @@
 let currentStoryboard = null;
 let activeJobId = null;
 let pollTimer = null;
+let lastLoggedJobMessage = '';
 
 // DOM Elements
 const promptInput = document.getElementById('promptInput');
@@ -77,10 +78,20 @@ function refreshLucide() {
 
 function logToTerminal(msg) {
   const line = document.createElement('div');
-  const now = new Date().toLocaleTimeString();
-  line.innerHTML = `<span class="text-zinc-600">[${now}]</span> ${msg}`;
+  const timestamp = document.createElement('span');
+  timestamp.className = 'text-zinc-600';
+  timestamp.textContent = '[' + new Date().toLocaleTimeString() + '] ';
+  line.appendChild(timestamp);
+  line.appendChild(document.createTextNode(String(msg ?? '')));
   renderLogs.appendChild(line);
   renderLogs.scrollTop = renderLogs.scrollHeight;
+}
+
+// AI output, preset data, and user-edited text must never be interpreted as HTML.
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
 }
 
 // -------------------------------------------------------------
@@ -137,10 +148,10 @@ async function handleGenerateStoryboard() {
       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
-    <span>Groq LPU Thinking & Composing...</span>
+    <span>AI Director Thinking & Storyboarding...</span>
   `;
 
-  logToTerminal(`Dispatching prompt to Groq LPU (openai/gpt-oss-120b): "${prompt}"`);
+  logToTerminal(`Sending creative brief to the AI director: "${prompt}"`);
 
   try {
     const res = await fetch('/api/storyboard/generate', {
@@ -155,22 +166,24 @@ async function handleGenerateStoryboard() {
     });
 
     const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || `Storyboard request failed (HTTP ${res.status})`);
     if (data.success && data.storyboard) {
       currentStoryboard = data.storyboard;
       renderSceneCards();
       startRenderBtn.disabled = false;
-      logToTerminal(`Groq LPU successfully synthesized storyboard "${currentStoryboard.title}" (${currentStoryboard.scenes.length} scenes).`);
+      logToTerminal(`AI creative director created "${currentStoryboard.title}" (${currentStoryboard.scenes.length} shots).`);
     } else {
       alert('Error generating storyboard: ' + (data.detail || 'Unknown error'));
     }
   } catch (err) {
     console.error('Error generating storyboard:', err);
-    logToTerminal(`Generation failed: ${err.message}`);
+    logToTerminal(`Storyboard generation failed: ${err.message}`);
+    alert('Storyboard generation failed: ' + err.message);
   } finally {
     generateStoryboardBtn.disabled = false;
     generateStoryboardBtn.innerHTML = `
       <i data-lucide="wand-2" class="w-4 h-4"></i>
-      <span>Generate Storyboard with Groq AI</span>
+      <span>Generate Original Storyboard</span>
     `;
     refreshLucide();
   }
@@ -203,6 +216,7 @@ function renderSceneCards() {
         <div class="flex items-center gap-1.5 flex-wrap">
           <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">Scene ${idx + 1}</span>
           <select class="scene-type-select bg-zinc-900 border border-borderSub text-[11px] text-zinc-300 rounded px-2 py-1 outline-none" data-idx="${idx}">
+            <option value="generative_video" ${sc.type === 'generative_video' ? 'selected' : ''}>AI-Generated Footage</option>
             <option value="ui_ux_wireframe" ${sc.type === 'ui_ux_wireframe' ? 'selected' : ''}>UI/UX Wireframe</option>
             <option value="ai_neural_network" ${sc.type === 'ai_neural_network' ? 'selected' : ''}>AI Neural Network</option>
             <option value="cyber_shield" ${sc.type === 'cyber_shield' ? 'selected' : ''}>Cyber Shield</option>
@@ -221,7 +235,7 @@ function renderSceneCards() {
           </select>
         </div>
         <div class="flex items-center gap-2">
-          <input type="number" step="0.5" min="1" max="15" value="${sc.duration || 3.0}" class="scene-duration-input w-14 bg-zinc-900 border border-borderSub text-xs text-zinc-300 rounded px-1.5 py-0.5 text-center font-mono" data-idx="${idx}">
+          <input type="number" step="0.5" min="1" max="15" value="${escapeHtml(sc.duration || 3.0)}" class="scene-duration-input w-14 bg-zinc-900 border border-borderSub text-xs text-zinc-300 rounded px-1.5 py-0.5 text-center font-mono" data-idx="${idx}">
           <span class="text-[10px] text-zinc-500">s</span>
           <button class="delete-scene-btn text-zinc-500 hover:text-zinc-300 p-1" data-idx="${idx}">✕</button>
         </div>
@@ -229,27 +243,28 @@ function renderSceneCards() {
 
       <!-- Badge & Headline -->
       <div class="space-y-1.5 pt-1">
-        <input type="text" placeholder="Telemetry Badge (e.g. 01 // GENESIS)" value="${sc.badge || ''}" class="scene-badge-input w-full bg-obsidian border border-borderSub text-[11px] font-mono text-zinc-400 rounded p-1.5 outline-none" data-idx="${idx}">
-        <input type="text" placeholder="Scene Headline" value="${sc.headline || sc.brand_title || ''}" class="scene-headline-input w-full bg-obsidian border border-borderSub text-xs font-medium text-zinc-200 rounded p-1.5 outline-none" data-idx="${idx}">
-        <input type="text" placeholder="Subtext / Tagline" value="${sc.subtext || sc.tagline || ''}" class="scene-subtext-input w-full bg-obsidian border border-borderSub text-[11px] text-zinc-400 rounded p-1.5 outline-none" data-idx="${idx}">
+        <input type="text" placeholder="Telemetry Badge (e.g. 01 // GENESIS)" value="${escapeHtml(sc.badge || '')}" class="scene-badge-input w-full bg-obsidian border border-borderSub text-[11px] font-mono text-zinc-400 rounded p-1.5 outline-none" data-idx="${idx}">
+        <input type="text" placeholder="Scene Headline" value="${escapeHtml(sc.headline || sc.brand_title || '')}" class="scene-headline-input w-full bg-obsidian border border-borderSub text-xs font-medium text-zinc-200 rounded p-1.5 outline-none" data-idx="${idx}">
+        <input type="text" placeholder="Subtext / Edit note" value="${escapeHtml(sc.subtext || sc.tagline || '')}" class="scene-subtext-input w-full bg-obsidian border border-borderSub text-[11px] text-zinc-400 rounded p-1.5 outline-none" data-idx="${idx}">
+        <textarea rows="3" placeholder="Actual footage prompt: describe the subject, action, setting, composition and motion" class="scene-video-prompt-input w-full bg-obsidian border border-borderSub text-[11px] text-zinc-300 rounded p-1.5 outline-none resize-y" data-idx="${idx}">${escapeHtml(sc.video_prompt || sc.shot_prompt || '')}</textarea>
       </div>
 
       ${sc.chat_bubble || sc.type === 'ai_neural_network' ? `
         <div class="pt-1">
-          <input type="text" placeholder="Prompt Bubble (e.g. Automate workflows)" value="${sc.chat_bubble || ''}" class="scene-chat-input w-full bg-obsidian border border-borderSub text-[10px] text-zinc-300 rounded p-1.5 outline-none" data-idx="${idx}">
+          <input type="text" placeholder="Prompt Bubble (e.g. Automate workflows)" value="${escapeHtml(sc.chat_bubble || '')}" class="scene-chat-input w-full bg-obsidian border border-borderSub text-[10px] text-zinc-300 rounded p-1.5 outline-none" data-idx="${idx}">
         </div>
       ` : ''}
 
       ${sc.pills || sc.type === 'ui_ux_wireframe' || sc.type === 'cyber_shield' ? `
         <div class="pt-1">
-          <input type="text" placeholder="Tag Pills (comma separated)" value="${(sc.pills || []).join(', ')}" class="scene-pills-input w-full bg-obsidian border border-borderSub text-[10px] text-zinc-300 rounded p-1.5 outline-none" data-idx="${idx}">
+          <input type="text" placeholder="Tag Pills (comma separated)" value="${escapeHtml((sc.pills || []).join(', '))}" class="scene-pills-input w-full bg-obsidian border border-borderSub text-[10px] text-zinc-300 rounded p-1.5 outline-none" data-idx="${idx}">
         </div>
       ` : ''}
 
       ${sc.type === 'code_showcase' ? `
         <div class="pt-1 space-y-1">
-          <input type="text" placeholder="Filename (e.g. engine.ts)" value="${sc.filename || 'orchestrator.ts'}" class="scene-filename-input w-full bg-obsidian border border-borderSub text-[10px] font-mono text-zinc-400 rounded p-1" data-idx="${idx}">
-          <textarea rows="2" placeholder="Code lines (one per row)" class="scene-code-input w-full bg-obsidian border border-borderSub text-[10px] font-mono text-zinc-300 rounded p-1.5 resize-none" data-idx="${idx}">${(sc.code_lines || []).join('\n')}</textarea>
+          <input type="text" placeholder="Filename (e.g. engine.ts)" value="${escapeHtml(sc.filename || 'orchestrator.ts')}" class="scene-filename-input w-full bg-obsidian border border-borderSub text-[10px] font-mono text-zinc-400 rounded p-1" data-idx="${idx}">
+          <textarea rows="2" placeholder="Code lines (one per row)" class="scene-code-input w-full bg-obsidian border border-borderSub text-[10px] font-mono text-zinc-300 rounded p-1.5 resize-none" data-idx="${idx}">${escapeHtml((sc.code_lines || []).join('\n'))}</textarea>
         </div>
       ` : ''}
     `;
@@ -303,6 +318,13 @@ function attachSceneListeners() {
       } else {
         currentStoryboard.scenes[idx].subtext = e.target.value;
       }
+    });
+  });
+
+  document.querySelectorAll('.scene-video-prompt-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].video_prompt = e.target.value;
     });
   });
 
@@ -388,7 +410,7 @@ async function handleStartRender() {
   currentStoryboard.mood = moodSelect.value;
 
   const engineSelect = document.getElementById('engineSelect');
-  const selectedEngine = engineSelect ? engineSelect.value : 'chromium';
+  const selectedEngine = engineSelect ? engineSelect.value : 'comfyui';
 
   startRenderBtn.disabled = true;
   startRenderBtn.innerHTML = `
@@ -402,7 +424,8 @@ async function handleStartRender() {
   renderStatusBadge.textContent = 'RENDERING';
   renderStatusBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-800 text-zinc-200 border border-zinc-700';
 
-  logToTerminal(`Dispatching render job to ${selectedEngine === 'opencv' ? 'Pure Python OpenCV (No Browser)' : 'Chromium SVG Stream Pipeline'}...`);
+  const engineLabel = selectedEngine === 'comfyui' ? 'ComfyUI generative video model' : selectedEngine === 'opencv' ? 'OpenCV procedural graphics' : 'Chromium motion graphics';
+  logToTerminal(`Dispatching render job to ${engineLabel}...`);
 
   try {
     const res = await fetch('/api/render', {
@@ -415,11 +438,14 @@ async function handleStartRender() {
     });
 
     const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || `Render request failed (HTTP ${res.status})`);
+    if (!data.job_id) throw new Error('Render API did not return a job ID.');
     activeJobId = data.job_id;
     pollRenderProgress();
   } catch (err) {
     console.error('Error starting render:', err);
     logToTerminal(`Render dispatch failed: ${err.message}`);
+    alert('Could not start rendering: ' + err.message);
     resetRenderBtn();
   }
 }
@@ -443,8 +469,9 @@ function pollRenderProgress() {
       telemetryFrames.textContent = job.frame ? `${job.frame} / ${job.total_frames}` : '-- / --';
       telemetryEta.textContent = job.eta_seconds ? `${job.eta_seconds}s` : '--';
 
-      if (job.message) {
+      if (job.message && job.message !== lastLoggedJobMessage) {
         logToTerminal(job.message);
+        lastLoggedJobMessage = job.message;
       }
 
       if (job.status === 'completed') {
@@ -460,7 +487,7 @@ function pollRenderProgress() {
     } catch (err) {
       console.error('Progress poll error:', err);
     }
-  }, 400);
+  }, 1000);
 }
 
 function handleRenderCompleted(job) {
@@ -469,6 +496,7 @@ function handleRenderCompleted(job) {
   renderProgressBar.style.width = '100%';
 
   logToTerminal(`Master MP4 delivered: ${job.video_url} (${(job.result.file_size_bytes / 1024 / 1024).toFixed(2)} MB in ${job.result.render_time_seconds}s)`);
+  if (job.result.audio_status) logToTerminal(job.result.audio_status);
 
   // Load video player
   videoSource.src = job.video_url;
@@ -494,7 +522,7 @@ function resetRenderBtn() {
   startRenderBtn.disabled = false;
   startRenderBtn.innerHTML = `
     <i data-lucide="play" class="w-4 h-4 fill-current"></i>
-    <span>Render Master Video (Python + FFmpeg)</span>
+    <span>Render Video</span>
   `;
   refreshLucide();
 }
@@ -524,7 +552,7 @@ async function loadVaultVideos() {
       card.className = 'bg-obsidian border border-borderSub rounded-lg overflow-hidden group cursor-pointer hover:border-zinc-700 transition-all';
       card.innerHTML = `
         <div class="aspect-video bg-zinc-950 relative flex items-center justify-center overflow-hidden">
-          ${v.thumb_url ? `<img src="${v.thumb_url}" class="w-full h-full object-cover">` : `<i data-lucide="video" class="w-8 h-8 text-zinc-700"></i>`}
+          ${v.thumb_url ? `<img src="${escapeHtml(v.thumb_url)}" class="w-full h-full object-cover" alt="">` : `<i data-lucide="video" class="w-8 h-8 text-zinc-700"></i>`}
           <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
             <span class="w-9 h-9 rounded-full bg-white text-obsidian flex items-center justify-center">
               <i data-lucide="play" class="w-4 h-4 fill-current ml-0.5"></i>
@@ -532,10 +560,10 @@ async function loadVaultVideos() {
           </div>
         </div>
         <div class="p-3 space-y-1">
-          <p class="text-xs font-medium text-zinc-200 truncate">${v.filename}</p>
+          <p class="text-xs font-medium text-zinc-200 truncate">${escapeHtml(v.filename)}</p>
           <div class="flex items-center justify-between text-[10px] font-mono text-zinc-500">
-            <span>${v.size_formatted}</span>
-            <span>${v.created_at}</span>
+            <span>${escapeHtml(v.size_formatted)}</span>
+            <span>${escapeHtml(v.created_at)}</span>
           </div>
         </div>
       `;
