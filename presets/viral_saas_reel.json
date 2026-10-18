@@ -1,0 +1,56 @@
+{
+  "id": "preset_viral_saas",
+  "title": "Hyperion — Autonomous Dev Engine Film",
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "mood": "tech_developer",
+  "genre": "developer",
+  "brand_name": "Hyperion",
+  "web_url": "hyperion.dev",
+  "scenes": [
+    {
+      "layout": "kinetic_manifesto",
+      "transition_out": "whip_pan_left",
+      "duration": 3.5,
+      "bg_theme": "dark_grid",
+      "badge": "01 // SYSTEM RELEASE",
+      "headline": "Engineering at the Speed of Thought",
+      "subtext": "The autonomous compilation runtime built for teams who ship without compromise.",
+      "pills": ["Autonomous", "Sub-10ms", "Global", "Scale"]
+    },
+    {
+      "layout": "terminal_code_stream",
+      "transition_out": "shutter_split",
+      "duration": 3.8,
+      "bg_theme": "dark_grid",
+      "badge": "02 // LIVE COMPILATION",
+      "headline": "Native Speed. Zero Cold Starts.",
+      "subtext": "Distributed global execution verified across 320 edge points of presence.",
+      "metrics": [
+        {"label": "Cold Start", "value": "0.82ms", "delta": "P99"},
+        {"label": "Throughput", "value": "120k req/s", "delta": "+400%"},
+        {"label": "Defects", "value": "0", "delta": "Verified"}
+      ]
+    },
+    {
+      "layout": "bento_grid_v2",
+      "transition_out": "rotational_snap_3d",
+      "duration": 3.8,
+      "bg_theme": "carbon_grid",
+      "badge": "03 // OBSERVABILITY",
+      "headline": "Precision Telemetry at Scale",
+      "subtext": "Every runtime event traced with sub-millisecond cryptographic resolution.",
+      "pills": ["Throughput", "Active", "Global", "Telemetry"]
+    },
+    {
+      "layout": "brand_stinger_outro",
+      "transition_out": "depth_dissolve",
+      "duration": 3.5,
+      "bg_theme": "dark_grid",
+      "badge": "04 // GET STARTED",
+      "headline": "Build on Hyperion",
+      "subtext": "hyperion.dev — Start free today. Zero infrastructure configuration required.",
+      "pills": ["Start Free", "Docs", "GitHub", "Enterprise"]
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "preset_apple_minimalist",
+  "title": "Aethelgard — Minimalist Titanium Luxury Film",
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "mood": "minimalist_luxury",
+  "genre": "luxury",
+  "brand_name": "Aethelgard",
+  "web_url": "aethelgard.ch",
+  "scenes": [
+    {
+      "layout": "editorial_lookbook",
+      "transition_out": "depth_dissolve",
+      "duration": 3.8,
+      "bg_theme": "dark_grid",
+      "badge": "ATELIER GENEVA 2026",
+      "headline": "Crafted Beyond Perfection",
+      "subtext": "Pure aerospace Grade 5 titanium sculpted for timeless mechanical precision.",
+      "pills": ["Titanium", "Mechanical", "Handmade", "Iconic"]
+    },
+    {
+      "layout": "product_showcase",
+      "transition_out": "circular_iris",
+      "duration": 3.8,
+      "bg_theme": "dark_grid",
+      "badge": "THE DISCIPLINE",
+      "headline": "Designed For Those Who Notice",
+      "subtext": "Every curve, facet, and edge finished by hand in our Swiss horology workshop.",
+      "pills": ["Handcrafted", "Certified", "Refined", "Rare"],
+      "features": ["Aerospace Grade 5 Titanium", "Hand-Polished Bezel", "100m Water Resistance"]
+    },
+    {
+      "layout": "cinematic_hero",
+      "transition_out": "whip_pan_right",
+      "duration": 3.8,
+      "bg_theme": "luxury_gold",
+      "badge": "ARCHITECTURAL DETAILS",
+      "headline": "Zero Compromise Engineering",
+      "subtext": "The culmination of three centuries of Swiss watchmaking mastery.",
+      "pills": ["Titanium", "Sapphire", "Ceramic", "Platinum"]
+    },
+    {
+      "layout": "brand_stinger_outro",
+      "transition_out": "depth_dissolve",
+      "duration": 3.8,
+      "bg_theme": "dark_grid",
+      "badge": "THE FINALE",
+      "headline": "Own The Moment",
+      "subtext": "aethelgard.ch — Complimentary worldwide concierge courier delivery.",
+      "metrics": [
+        {"label": "Power Reserve", "value": "72 Hours"},
+        {"label": "Water Resistance", "value": "100 Meters"},
+        {"label": "Edition Size", "value": "500 Pieces"}
+      ]
+    }
+  ]
+}

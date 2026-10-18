@@ -1,0 +1,60 @@
+{
+  "id": "preset_crypto_finance",
+  "title": "Apex Capital — Sovereign Liquidity Protocol",
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "mood": "high_energy_finance",
+  "genre": "finance",
+  "brand_name": "Apex",
+  "web_url": "apex.capital",
+  "scenes": [
+    {
+      "layout": "kinetic_manifesto",
+      "transition_out": "whip_pan_left",
+      "duration": 3.5,
+      "bg_theme": "dark_grid",
+      "badge": "01 // PROTOCOL GENESIS",
+      "headline": "Institutional Liquidity at Pure Speed",
+      "subtext": "Sub-millisecond trade execution infrastructure engineered for sovereign capital.",
+      "pills": ["Liquidity", "Execution", "Zero-Slippage", "Alpha"]
+    },
+    {
+      "layout": "financial_telemetry",
+      "transition_out": "rotational_snap_3d",
+      "duration": 4.0,
+      "bg_theme": "dark_grid",
+      "badge": "02 // LIVE ORDER BOOK",
+      "headline": "All-Time High. Every Second.",
+      "subtext": "Continuous algorithmic matching with zero front-running and complete cryptographic verification.",
+      "metrics": [
+        {"label": "24h Volume", "value": "$14.8B", "delta": "+42.4%"},
+        {"label": "Total Value Locked", "value": "$64.2B", "delta": "ATH"},
+        {"label": "Execution Latency", "value": "0.4ms", "delta": "P99"}
+      ]
+    },
+    {
+      "layout": "metric_impact_matrix",
+      "transition_out": "zoom_punch",
+      "duration": 3.8,
+      "bg_theme": "carbon_grid",
+      "badge": "03 // CAPITAL ASSURANCE",
+      "headline": "Proven at Extreme Scale",
+      "subtext": "Over $420 billion in cumulative volume executed without a single second of downtime.",
+      "metrics": [
+        {"label": "Cumulative Volume", "value": "$420B+", "delta": "Audited"},
+        {"label": "SLA Uptime", "value": "100%", "delta": "Historical"},
+        {"label": "Active Markets", "value": "180+", "delta": "Global"}
+      ]
+    },
+    {
+      "layout": "brand_stinger_outro",
+      "transition_out": "depth_dissolve",
+      "duration": 3.5,
+      "bg_theme": "dark_grid",
+      "badge": "04 // ACCESS THE PROTOCOL",
+      "headline": "Trade Without Compromise",
+      "subtext": "apex.capital — Connect institutional API endpoints or launch the sovereign terminal.",
+      "pills": ["Launch Terminal", "API Keys", "Docs", "Whitepaper"]
+    }
+  ]
+}

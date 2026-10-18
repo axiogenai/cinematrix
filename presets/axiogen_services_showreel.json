@@ -1,0 +1,69 @@
+{
+  "id": "preset_axiogen_services_showreel",
+  "title": "Team Axiogen — Agency Broadcast Showreel",
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "mood": "cinematic_tech",
+  "brand_name": "Team Axiogen",
+  "web_url": "team.axiogen.in",
+  "scenes": [
+    {
+      "layout": "blueprint_reveal",
+      "duration": 3.6,
+      "bg_theme": "dark_grid",
+      "font_family": "font-sans",
+      "badge": "01 // BRAND GENESIS",
+      "headline": "Team Axiogen",
+      "subtext": "Architecting autonomous systems and bespoke digital motion for visionary companies.",
+      "pills": ["Creative", "Engineer", "Scale", "Launch"]
+    },
+    {
+      "layout": "bento_grid",
+      "duration": 3.6,
+      "bg_theme": "cream_grid",
+      "font_family": "font-sans",
+      "badge": "02 // CAPABILITIES",
+      "headline": "Full-Stack Creative Engineering",
+      "subtext": "From architectural design systems to high-throughput autonomous intelligence.",
+      "pills": ["UI/UX", "Agentic AI", "Cloud", "Security"]
+    },
+    {
+      "layout": "coin_parade",
+      "duration": 3.6,
+      "bg_theme": "dark_grid",
+      "font_family": "font-sans",
+      "badge": "03 // SERVICE PORTFOLIO",
+      "headline": "Five Core Disciplines",
+      "subtext": "Precision execution backed by battle-tested engineering standards.",
+      "pills": ["Design", "AI Agents", "SecOps", "Cloud", "ERP"]
+    },
+    {
+      "layout": "brand_profile",
+      "duration": 3.6,
+      "bg_theme": "dark_grid",
+      "font_family": "font-sans",
+      "badge": "04 // VERIFIED TEAM",
+      "headline": "Enterprise Certified",
+      "subtext": "One stop solution for all creative needs and high-velocity engineering goals.",
+      "metrics": [
+        {"label": "Shipped", "value": "100%"},
+        {"label": "SLA", "value": "99.99%"},
+        {"label": "Velocity", "value": "10x"}
+      ]
+    },
+    {
+      "layout": "dashboard_outro",
+      "duration": 3.6,
+      "bg_theme": "dark_grid",
+      "font_family": "font-sans",
+      "badge": "05 // THE FINALE",
+      "headline": "Ideas Deserve To Become Reality",
+      "subtext": "team.axiogen.in — Partner with Team Axiogen today.",
+      "metrics": [
+        {"label": "Active Platforms", "value": "Global"},
+        {"label": "Security", "value": "Zero-Trust"},
+        {"label": "Support", "value": "24/7"}
+      ]
+    }
+  ]
+}

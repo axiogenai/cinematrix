@@ -1,0 +1,31 @@
+# Virtual environment & Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Environment variables
+.env
+
+# Node & Dependencies
+node_modules/
+package-lock.json
+
+# Build and test artifacts
+output/*.mp4
+output/*.wav
+output/*.jpg
+output/*.html
+!output/.gitkeep
+
+# Temporary tests
+test_*.py
+
+# System
+.DS_Store
+Thumbs.db
+*.log

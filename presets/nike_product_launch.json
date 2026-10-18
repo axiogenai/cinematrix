@@ -1,0 +1,55 @@
+{
+  "id": "preset_product_launch",
+  "title": "Nike Pegasus X — Kinetic Product Launch",
+  "aspect_ratio": "16:9",
+  "fps": 30,
+  "mood": "high_energy_commercial",
+  "genre": "product_launch",
+  "brand_name": "Nike",
+  "web_url": "nike.com/pegasus",
+  "scenes": [
+    {
+      "layout": "kinetic_manifesto",
+      "transition_out": "whip_pan_left",
+      "duration": 3.2,
+      "bg_theme": "dark_grid",
+      "badge": "01 // THE IGNITION",
+      "headline": "Defy Gravity at Every Stride",
+      "subtext": "Engineered with dual-density ReactX foam and carbon-infused propulsion plates.",
+      "pills": ["ReactX", "Carbon", "Propulsion", "Velocity"]
+    },
+    {
+      "layout": "product_showcase",
+      "transition_out": "rotational_snap_3d",
+      "duration": 3.8,
+      "bg_theme": "dark_grid",
+      "badge": "02 // ANATOMY",
+      "headline": "Pure Propulsion Architecture",
+      "subtext": "Concentric telemetry monitoring 45 biomechanical stress vectors in real-time.",
+      "features": ["Engineered Mesh Upper", "Carbon Propulsion Plate", "Dual-Density ReactX Core"]
+    },
+    {
+      "layout": "split_comparison",
+      "transition_out": "zoom_punch",
+      "duration": 3.6,
+      "bg_theme": "dark_grid",
+      "badge": "03 // ENERGY RETURN",
+      "headline": "Standard Foam vs ReactX Propulsion",
+      "subtext": "Why world-class marathon runners choose the Pegasus mechanical propulsion system.",
+      "metrics": [
+        {"label": "Energy Return", "value": "+42%", "delta": "Verified"},
+        {"label": "Weight", "value": "184g", "delta": "Featherlight"}
+      ]
+    },
+    {
+      "layout": "brand_stinger_outro",
+      "transition_out": "depth_dissolve",
+      "duration": 3.4,
+      "bg_theme": "dark_grid",
+      "badge": "04 // AVAILABLE NOW",
+      "headline": "Just Do It",
+      "subtext": "nike.com/pegasus — Available globally in limited colorways.",
+      "pills": ["Order Now", "Find Store", "Nike App", "Member Access"]
+    }
+  ]
+}

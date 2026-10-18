@@ -1,0 +1,123 @@
+/* CineMatrix Media Studio — Ultra-Restrained Matte Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-base: #09090b;
+  --bg-card: #121215;
+  --bg-card-hover: #18181c;
+  --bg-surface: #18181b;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(255, 255, 255, 0.22);
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --accent-sage: #a3be8c;
+  --accent-brick: #bf616a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Code font helper */
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Subtle transitions */
+.transition-all {
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Border styles */
+.border-subtle {
+  border: 1px solid var(--border-subtle);
+}
+
+.border-subtle:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Restrained Buttons */
+.btn-primary {
+  background-color: #f4f4f5;
+  color: #09090b;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-primary:hover {
+  background-color: #ffffff;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #18181b;
+  color: #f4f4f5;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #27272a;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Scene Card Active State */
+.scene-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 14px;
+  transition: border-color 0.15s ease;
+}
+
+.scene-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.scene-card.active {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: #15151a;
+}
