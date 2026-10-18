@@ -54,47 +54,67 @@ class GroqCreativeDirector:
             raise CreativeDirectorError("Choose a duration between 4 and 180 seconds.")
 
         system_prompt = """You are CineMatrix AI's autonomous film director, cinematographer, and generative visual coder.
-You invent an original visual treatment and bespoke visual code from the user's brief.
-STRICT RULE: Do NOT use fixed templates, canned archetypes, or presets. Every single visual element, vector illustration, layout structure, typography treatment, and animation must be invented specifically for the user's prompt.
+You invent a completely bespoke, broadcast-grade commercial or promotional film from the user's brief.
 
-Return only valid JSON with this schema:
+CRITICAL DIRECTIVES:
+1. ZERO TEMPLATES & ZERO FIXED THEMES: Never generate generic identical slides. Every film must possess its own unique visual soul, domain-intelligent color palette, typography pairing, and shot architectures.
+   - Bakery / Artisanal Food: Warm wood-fired espresso (#120905), rustic hearth amber (#D97706 / #F59E0B), flour linen (#FBF9F5), warm serif or organic display typography.
+   - Luxury / Haute Horlogerie: Deepest caviar obsidian (#070605), champagne gold (#E5C378), titanium (#E2E8F0), serif Playfair/Cinzel typography.
+   - High-Tech / Cyber / SaaS: Deep carbon slate (#080D1A), technical titanium (#F1F5F9), cyan/sky (#38BDF8), JetBrains Mono or Space Grotesk.
+   - Automotive / Athletics / Energy: Carbon black (#0B0C10), racing crimson (#E11D48) or high-velocity white (#FFFFFF), Anton or Syne display type.
+   - Medical / Biotech / Clean: Clinical pure white (#F8FAFC) or crisp slate (#0F172A), sterile sage (#10B981) or calming azure, Plus Jakarta Sans.
+
+2. DYNAMIC COMPOSITIONS (VARY ACROSS EVERY SCENE):
+   Each scene MUST use a DIFFERENT cinematic composition from these 7 architectures. NEVER use the same composition for every scene:
+   - "kinetic_poster": Massive 90px-130px display typography dominating the frame with dynamic SVG vector cut-throughs.
+   - "full_bleed_hero": Edge-to-edge full canvas SVG vector artwork with a cinematic lower-third / corner title card.
+   - "centered_monumental": Symmetrical, majestic central hero subject with top & bottom typographic framing.
+   - "split_dynamic": Asymmetric dual-panel split screen (contrasting text panel + visual stage).
+   - "editorial_asymmetric": Refined off-center editorial spread with generous negative space, serif titles, and delicate framing.
+   - "hud_technical": Technical blueprint/HUD with corner crosshair reticles, coordinate markers, and telemetry gauges.
+   - "brand_finale": Grand cinematic brand resolve, emblem/logo, and final call-to-action stinger.
+
+3. BESPOKE SVG VECTOR ARTWORK (visual_code):
+   For EVERY shot, write genuine, detailed, beautiful SVG code (viewBox='0 0 1200 800' or appropriate) illustrating the actual subject matter of the scene (e.g. rising sourdough loaf with score lines, aerodynamic chassis airflow curves, ticking tourbillon balance wheel, neural network cluster).
+
+4. CUSTOM CSS KEYFRAME ANIMATIONS (animation_css):
+   Provide CSS @keyframes and class rules animating the SVG paths and scene elements (transform, stroke-dashoffset, opacity, scale, rotate, drift).
+
+Return only valid JSON with this exact schema:
 {
-  "title": "specific original film title",
-  "logline": "one sentence describing the film's creative thesis",
-  "visual_style": "cohesive visual treatment and color language",
-  "genre": "inferred genre (e.g. Artisanal Culinary, High-Tech Launch, Luxury Fashion, Documentary, Automotive, Sports)",
-  "mood": "emotional and soundtrack direction (cinematic_tech, minimalist_apple, high_energy_saas, cyber_pulse, or luxury_ambient)",
+  "title": "Specific Film Title",
+  "logline": "One sentence creative thesis",
+  "genre": "Inferred genre",
+  "mood": "cinematic_tech, minimalist_apple, high_energy_saas, cyber_pulse, or luxury_ambient",
   "aspect_ratio": "16:9, 9:16, 1:1, or 4:5",
-  "negative_prompt": "visual defects to avoid",
+  "typography": {
+    "headline_font": "Space Grotesk | Playfair Display | Anton | JetBrains Mono | Plus Jakarta Sans | Cinzel | Syne | Outfit",
+    "body_font": "Plus Jakarta Sans | Inter | JetBrains Mono | Space Grotesk"
+  },
   "palette": {
-    "bg": "#09090b",
-    "surface": "#141419",
-    "accent": "#f4f4f5",
-    "text": "#f4f4f5"
+    "bg": "#120905",
+    "surface": "#1E110A",
+    "accent": "#F59E0B",
+    "text": "#FFFDF7",
+    "muted": "#B5A79E",
+    "border": "rgba(245, 158, 11, 0.2)"
   },
   "scenes": [
     {
-      "duration": 3.5,
-      "badge": "01 // CHAPTER OR TECHNICAL METRIC",
-      "headline": "Powerful Scene Headline",
-      "subtext": "Supporting explanation or narrative line",
-      "camera": "specific framing, lens feel, camera movement and speed",
-      "lighting": "specific light source, direction, contrast and atmosphere",
+      "duration": 3.0,
+      "composition": "kinetic_poster",
+      "badge": "01 // CHAPTER OR METRIC",
+      "headline": "Impactful Headline",
+      "subtext": "Compelling narrative or technical explanation line",
+      "camera": "Specific camera movement, angle and focal length",
+      "lighting": "Specific light atmosphere and direction",
       "transition_out": "whip_pan_left, zoom_punch, rotational_snap_3d, shutter_split, circular_iris, or depth_dissolve",
-      "visual_code": "<svg viewBox='0 0 600 400' xmlns='http://www.w3.org/2000/svg'>... bespoke SVG vector art, diagram, illustration, or visual subject created specifically for this scene ...</svg>",
-      "animation_css": "CSS keyframes and classes for elements inside this scene",
-      "video_prompt": "a complete standalone generative-video prompt describing visible subjects, action, environment, composition, motion and temporal development"
+      "visual_code": "<svg viewBox='0 0 1200 800' xmlns='http://www.w3.org/2000/svg'>... detailed bespoke SVG vectors ...</svg>",
+      "animation_css": "@keyframes pulseGlow { 0% { opacity: 0.6; } 100% { opacity: 1; } } .anim-glow { animation: pulseGlow 2s ease-in-out infinite alternate; }",
+      "video_prompt": "Standalone generative video prompt describing visible subjects, action, and motion"
     }
   ]
 }
-
-Directing & Creative Coding rules:
-- Invent a genuine creative interpretation; do not merely rephrase the prompt.
-- Create 2-8 purposeful shots fitting the requested duration.
-- For EVERY shot, generate bespoke 'visual_code' containing valid SVG graphics, vector illustrations, geometry, or visual symbols depicting the subject matter (e.g. for a bakery: oven, bread, flour; for space: rocket, orbit; for a car: chassis, aerodynamics; for finance: charts, order books).
-- Do not repeat the same visual code across scenes; each scene must show a distinct visual progression.
-- In 'animation_css', provide custom CSS keyframes that animate the SVG paths (transform, scale, rotate, opacity, stroke-dashoffset).
-- Return durations whose sum is close to the requested total. Include no markdown or prose outside the JSON.
 """
 
         user_message = {
@@ -102,7 +122,7 @@ Directing & Creative Coding rules:
             "aspect_ratio": aspect_ratio,
             "target_duration_seconds": duration,
             "mood_hint": mood,
-            "deliverable": "production-ready shot plan for a real generative video model"
+            "deliverable": "production-ready shot plan with distinct visual compositions and bespoke SVG visual code"
         }
         payload = {
             "model": self.model,
@@ -141,11 +161,39 @@ Directing & Creative Coding rules:
         if len(scenes) > 12:
             raise CreativeDirectorError("AI returned too many shots (maximum 12). Please retry.")
 
+        # Normalize film-level palette & typography
+        palette = storyboard.get("palette") or storyboard.get("theme", {}).get("palette") or {}
+        bg = palette.get("bg", "#09090b")
+        storyboard["palette"] = {
+            "bg": bg,
+            "surface": palette.get("surface", "#141419"),
+            "accent": palette.get("accent", "#f4f4f5"),
+            "text": palette.get("text", "#f4f4f5"),
+            "muted": palette.get("muted", "#94a3b8"),
+            "border": palette.get("border", "rgba(255,255,255,0.12)")
+        }
+
+        typography = storyboard.get("typography") or storyboard.get("theme", {}).get("typography") or {}
+        storyboard["typography"] = {
+            "headline_font": typography.get("headline_font", "Plus Jakarta Sans"),
+            "body_font": typography.get("body_font", "Plus Jakarta Sans")
+        }
+
+        ALLOWED_COMPOSITIONS = [
+            "kinetic_poster",
+            "full_bleed_hero",
+            "split_dynamic",
+            "centered_monumental",
+            "editorial_asymmetric",
+            "hud_technical",
+            "brand_finale"
+        ]
+
         for index, scene in enumerate(scenes, start=1):
             if not isinstance(scene, dict):
                 raise CreativeDirectorError(f"AI shot {index} is not a valid dictionary.")
-            
-            # Ensure video_prompt is never empty (fallback to visual_description or headline)
+
+            # Ensure video_prompt is never empty
             if not str(scene.get("video_prompt", "")).strip():
                 scene["video_prompt"] = scene.get("visual_description") or scene.get("headline") or "Cinematic shot with dramatic motion and lighting"
 
@@ -154,13 +202,13 @@ Directing & Creative Coding rules:
             except (TypeError, ValueError):
                 scene_duration = duration / len(scenes)
             scene["duration"] = max(1.0, scene_duration)
-            
-            if scene.get("visual_code"):
-                scene["type"] = "bespoke_ai"
-                scene["layout"] = "bespoke_ai"
-            else:
-                scene.setdefault("type", "bespoke_ai")
-                scene.setdefault("layout", "bespoke_ai")
+
+            comp = scene.get("composition") or scene.get("layout") or scene.get("type")
+            if comp not in ALLOWED_COMPOSITIONS:
+                comp = ALLOWED_COMPOSITIONS[(index - 1) % len(ALLOWED_COMPOSITIONS)]
+            scene["composition"] = comp
+            scene["layout"] = comp
+            scene["type"] = comp
 
             scene.setdefault("headline", f"Shot {index}")
             scene.setdefault("visual_description", scene["video_prompt"])

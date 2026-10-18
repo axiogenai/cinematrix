@@ -10,10 +10,38 @@ import numpy as np
 from .audio_synth import synthesize_soundtrack
 from .html_motion_generator import generate_motion_html
 
+def _resolve_ffmpeg_path(custom_path: str = None) -> str:
+    if custom_path and os.path.exists(custom_path):
+        return custom_path
+    env_val = os.getenv("FFMPEG_PATH")
+    if env_val and os.path.exists(env_val):
+        return env_val
+    # Check project .env
+    project_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    if os.path.isfile(project_env):
+        try:
+            with open(project_env, "r", encoding="utf-8-sig") as f:
+                for line in f:
+                    if line.strip().startswith("FFMPEG_PATH="):
+                        val = line.strip().split("=", 1)[1].strip().strip('"').strip("'")
+                        if os.path.exists(val):
+                            return val
+        except Exception:
+            pass
+    # Common static ffmpeg locations
+    user_static = os.path.expanduser("~/node_modules/ffmpeg-static/ffmpeg.exe")
+    if os.path.exists(user_static):
+        return user_static
+    which_ffmpeg = shutil.which("ffmpeg")
+    if which_ffmpeg:
+        return which_ffmpeg
+    return "ffmpeg"
+
+
 class DynamicChromiumVideoEngine:
     def __init__(self, ffmpeg_path: str = None, node_exe: str = "node"):
         self.node_exe = node_exe
-        self.ffmpeg_path = ffmpeg_path or os.getenv("FFMPEG_PATH") or shutil.which("ffmpeg") or "ffmpeg"
+        self.ffmpeg_path = _resolve_ffmpeg_path(ffmpeg_path)
         self.renderer_js = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chromium_renderer.js")
 
     def render_storyboard(self, storyboard: dict, output_dir: str, progress_callback=None) -> dict:

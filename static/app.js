@@ -79,22 +79,15 @@ const closeVaultBtn = document.getElementById('closeVaultBtn');
 const vaultGrid = document.getElementById('vaultGrid');
 const vaultSearchInput = document.getElementById('vaultSearchInput');
 
-// Archetype Definitions for Dynamic Shot Creation
-const ARCHETYPES = [
-  { id: 'kinetic_manifesto', label: 'Kinetic Manifesto', desc: 'Bold kinetic wordmark reveal & manifesto statement' },
-  { id: 'product_showcase', label: 'Product 3D Showcase', desc: 'Hardware elevation, titanium finish & turntable' },
-  { id: 'terminal_code_stream', label: 'Terminal Code Stream', desc: 'Live hacker terminal, syntax typing stream & status' },
-  { id: 'financial_telemetry', label: 'Financial Telemetry', desc: 'Candlestick trading chart, volume bars & live ticker' },
-  { id: 'split_comparison', label: 'Split Comparison', desc: 'Before vs After interactive split comparison panel' },
-  { id: 'bento_grid_v2', label: 'Bento Grid v2', desc: 'Asymmetric feature bento grid with live metrics' },
-  { id: 'metric_impact_matrix', label: 'Metric Impact Matrix', desc: 'High-density KPI statistics with sparklines' },
-  { id: 'brand_stinger_outro', label: 'Brand Stinger Outro', desc: 'Cinema logo resolve, audio sting & web callout' },
-  { id: 'editorial_lookbook', label: 'Editorial Lookbook', desc: 'High-fashion typographic luxury spread' },
-  { id: 'coin_parade', label: 'Token Coin Parade', desc: '3D floating isometric tokens & crypto parade' },
-  { id: 'blueprint_reveal', label: 'Blueprint Wireframe', desc: 'CAD architectural schematic with floating cursor' },
-  { id: 'dashboard_device', label: 'Device Mockup', desc: 'Mobile/Desktop device frame with UI preview' },
-  { id: 'kinetic_parallax', label: 'Spatial Parallax', desc: 'Multi-plane spatial floating parallax cloud' },
-  { id: 'cinematic_hero', label: 'Cinematic Hero', desc: 'High-contrast cinematic widescreen hero title' }
+// Filmic Composition Architectures for Dynamic Shot Direction
+const COMPOSITIONS = [
+  { id: 'kinetic_poster', label: 'Kinetic Poster', desc: 'Massive display headline & high-velocity typography' },
+  { id: 'full_bleed_hero', label: 'Full-Bleed Hero', desc: 'Full-canvas vector artwork & cinematic lower-third' },
+  { id: 'centered_monumental', label: 'Centered Monumental', desc: 'Symmetrical hero reveal with top & bottom framing' },
+  { id: 'split_dynamic', label: 'Asymmetric Split', desc: 'Contrasting dual-panel with alternating geometry' },
+  { id: 'editorial_asymmetric', label: 'Editorial Luxury', desc: 'Haute couture serif typography & generous whitespace' },
+  { id: 'hud_technical', label: 'Technical HUD', desc: 'Corner crosshairs, telemetry gauges & wireframes' },
+  { id: 'brand_finale', label: 'Brand Stinger Outro', desc: 'Monumental central logo resolve & call-to-action' }
 ];
 
 // Cinema Transition Types
@@ -107,16 +100,6 @@ const TRANSITIONS = [
   { id: 'circular_iris', label: 'Cinema Iris Aperture' },
   { id: 'depth_dissolve', label: 'Depth Dissolve' },
   { id: 'whip_pan_up', label: 'Whip Pan Up' }
-];
-
-// Themes
-const BG_THEMES = [
-  { id: 'dark_grid', label: 'Dark Grid' },
-  { id: 'carbon_grid', label: 'Carbon Grid' },
-  { id: 'cream_grid', label: 'Cream Grid' },
-  { id: 'lime_grid', label: 'Lime Grid' },
-  { id: 'matrix_mono', label: 'Matrix Monochrome' },
-  { id: 'deep_space', label: 'Deep Space' }
 ];
 
 // -------------------------------------------------------------
@@ -431,16 +414,13 @@ async function handleGenerateStoryboard() {
     if (data.success && data.storyboard) {
       currentStoryboard = data.storyboard;
       
-      // Auto-assign Archetypes and Transitions intelligently if not already present
+      // Auto-assign Compositions and Transitions intelligently if not already present
       currentStoryboard.scenes.forEach((sc, idx) => {
-        if (!sc.layout && !sc.type) {
-          sc.type = ARCHETYPES[idx % ARCHETYPES.length].id;
+        if (!sc.composition) {
+          sc.composition = (sc.layout || sc.type || COMPOSITIONS[idx % COMPOSITIONS.length].id);
         }
         if (!sc.transition_out) {
           sc.transition_out = TRANSITIONS[idx % TRANSITIONS.length].id;
-        }
-        if (!sc.bg_theme) {
-          sc.bg_theme = 'dark_grid';
         }
       });
 
@@ -477,7 +457,7 @@ function renderSceneCards() {
     scenesContainer.innerHTML = `
       <div class="p-6 rounded-lg border border-dashed border-zinc-800 text-center text-xs text-zinc-500 space-y-2">
         <i data-lucide="film" class="w-6 h-6 mx-auto text-zinc-600"></i>
-        <p>No shots loaded. Enter a creative prompt above and click "Generate Storyboard" or load a showcase preset.</p>
+        <p>No shots loaded. Enter a creative prompt above and click "Generate Storyboard".</p>
       </div>
     `;
     sceneCount.textContent = '0';
@@ -491,6 +471,11 @@ function renderSceneCards() {
   sceneCount.textContent = scenes.length;
   timelineStatsBadge.textContent = `${scenes.length} shots · ${totalDur.toFixed(1)}s total`;
 
+  const pal = currentStoryboard.palette || {};
+  const bgCol = pal.bg || '#09090b';
+  const accentCol = pal.accent || '#f4f4f5';
+  const textCol = pal.text || '#f4f4f5';
+
   scenesContainer.innerHTML = '';
 
   scenes.forEach((sc, idx) => {
@@ -498,10 +483,8 @@ function renderSceneCards() {
     card.className = 'scene-card space-y-2.5';
     card.dataset.idx = idx;
 
-    // Archetype selection
-    const currentArchetype = sc.layout || sc.type || 'kinetic_manifesto';
+    const currentComposition = sc.composition || sc.layout || sc.type || 'kinetic_poster';
     const currentTransition = sc.transition_out || 'whip_pan_left';
-    const currentTheme = sc.bg_theme || 'dark_grid';
 
     card.innerHTML = `
       <!-- Card Header: Shot Number + Controls -->
@@ -511,7 +494,7 @@ function renderSceneCards() {
             SHOT ${String(idx + 1).padStart(2, '0')}
           </span>
           <span class="text-[10px] font-mono text-zinc-500">
-            ${sc.camera || 'Cinematic Angle'}
+            ${escapeHtml(sc.camera || 'Cinematic Framing')}
           </span>
         </div>
 
@@ -538,12 +521,12 @@ function renderSceneCards() {
         </div>
       </div>
 
-      <!-- Archetype & Cinema Transition Pickers -->
+      <!-- Composition & Cinema Transition Pickers -->
       <div class="grid grid-cols-3 gap-1.5">
         <div class="space-y-0.5">
-          <label class="text-[9px] font-mono text-zinc-500 uppercase">Archetype</label>
-          <select class="scene-archetype-select w-full bg-obsidian border border-borderSubtle text-[10px] text-zinc-300 rounded px-1.5 py-1 outline-none" data-idx="${idx}">
-            ${ARCHETYPES.map(a => `<option value="${a.id}" ${currentArchetype === a.id ? 'selected' : ''}>${a.label}</option>`).join('')}
+          <label class="text-[9px] font-mono text-zinc-500 uppercase">Composition</label>
+          <select class="scene-composition-select w-full bg-obsidian border border-borderSubtle text-[10px] text-zinc-300 rounded px-1.5 py-1 outline-none" data-idx="${idx}">
+            ${COMPOSITIONS.map(c => `<option value="${c.id}" ${currentComposition === c.id ? 'selected' : ''}>${c.label}</option>`).join('')}
           </select>
         </div>
 
@@ -555,30 +538,58 @@ function renderSceneCards() {
         </div>
 
         <div class="space-y-0.5">
-          <label class="text-[9px] font-mono text-zinc-500 uppercase">Atmosphere</label>
-          <select class="scene-theme-select w-full bg-obsidian border border-borderSubtle text-[10px] text-zinc-300 rounded px-1.5 py-1 outline-none" data-idx="${idx}">
-            ${BG_THEMES.map(th => `<option value="${th.id}" ${currentTheme === th.id ? 'selected' : ''}>${th.label}</option>`).join('')}
-          </select>
+          <label class="text-[9px] font-mono text-zinc-500 uppercase">Film Palette</label>
+          <div class="flex items-center gap-1.5 h-[27px] px-2 rounded bg-obsidian border border-borderSubtle">
+            <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" style="background:${bgCol}" title="Background: ${bgCol}"></span>
+            <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" style="background:${accentCol}" title="Accent: ${accentCol}"></span>
+            <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" style="background:${textCol}" title="Text: ${textCol}"></span>
+            <span class="text-[9px] font-mono text-zinc-400 truncate ml-1">${escapeHtml(currentStoryboard.genre || 'Cinema')}</span>
+          </div>
         </div>
       </div>
 
       <!-- Text Inputs: Badge & Headline -->
       <div class="space-y-1.5 pt-0.5">
         <div class="grid grid-cols-3 gap-1.5">
-          <input type="text" placeholder="Badge (01 // CHAPTER)" value="${escapeHtml(sc.badge || `0${idx + 1} // ${currentArchetype.toUpperCase()}`)}" class="scene-badge-input bg-obsidian border border-borderSubtle text-[10px] font-mono text-zinc-400 rounded px-2 py-1 outline-none" data-idx="${idx}">
+          <input type="text" placeholder="Badge (01 // CHAPTER)" value="${escapeHtml(sc.badge || `0${idx + 1} // ${currentComposition.toUpperCase()}`)}" class="scene-badge-input bg-obsidian border border-borderSubtle text-[10px] font-mono text-zinc-400 rounded px-2 py-1 outline-none" data-idx="${idx}">
           <input type="text" placeholder="Headline / Title" value="${escapeHtml(sc.headline || sc.brand_title || '')}" class="scene-headline-input col-span-2 bg-obsidian border border-borderSubtle text-xs font-semibold text-zinc-200 rounded px-2 py-1 outline-none" data-idx="${idx}">
         </div>
-        <input type="text" placeholder="Subtext / Tagline / Editorial note" value="${escapeHtml(sc.subtext || sc.tagline || '')}" class="scene-subtext-input w-full bg-obsidian border border-borderSubtle text-[11px] text-zinc-400 rounded px-2 py-1 outline-none" data-idx="${idx}">
+        <input type="text" placeholder="Subtext / Tagline / Narrative statement" value="${escapeHtml(sc.subtext || sc.tagline || '')}" class="scene-subtext-input w-full bg-obsidian border border-borderSubtle text-[11px] text-zinc-400 rounded px-2 py-1 outline-none" data-idx="${idx}">
       </div>
 
-      <!-- Archetype Specific Custom Fields -->
-      ${renderArchetypeFields(sc, idx)}
+      <!-- Bespoke Vector Artwork Editor -->
+      <div class="p-2.5 rounded bg-zinc-950/80 border border-borderSubtle space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[9px] font-mono text-sageMuted uppercase flex items-center gap-1.5 font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-sageMuted"></span>
+            AI Bespoke Vector Artwork
+          </span>
+          <span class="text-[9px] font-mono text-zinc-500">Autonomous SVG & Motion</span>
+        </div>
+        <div id="svg_preview_${idx}" class="w-full h-28 bg-obsidian rounded border border-borderSubtle flex items-center justify-center p-2 overflow-hidden shadow-inner">
+          ${sc.visual_code || '<span class="text-[10px] font-mono text-zinc-600">Generating SVG vectors...</span>'}
+        </div>
+        <div class="space-y-1">
+          <label class="text-[9px] font-mono text-zinc-500 flex justify-between">
+            <span>SVG Vector Code (AI Generated)</span>
+            <span class="text-[8px] text-zinc-600 font-mono">Live Editable</span>
+          </label>
+          <textarea rows="2" class="scene-visual-code-input w-full bg-obsidian border border-borderSubtle text-[9px] font-mono text-zinc-400 rounded p-1 resize-y" data-idx="${idx}">${escapeHtml(sc.visual_code || '')}</textarea>
+        </div>
+        <div class="space-y-1">
+          <label class="text-[9px] font-mono text-zinc-500 flex justify-between">
+            <span>CSS Animation Keyframes</span>
+            <span class="text-[8px] text-zinc-600 font-mono">Live Keyframes</span>
+          </label>
+          <textarea rows="2" class="scene-animation-css-input w-full bg-obsidian border border-borderSubtle text-[9px] font-mono text-zinc-400 rounded p-1 resize-y" data-idx="${idx}">${escapeHtml(sc.animation_css || '')}</textarea>
+        </div>
+      </div>
 
-      <!-- Standalone Footage Prompt (Used for ComfyUI and Reference Framing) -->
+      <!-- Standalone Footage Prompt -->
       <div class="space-y-0.5 pt-1">
         <label class="text-[9px] font-mono text-zinc-500 uppercase flex items-center justify-between">
           <span>Camera & Footage Directive</span>
-          <span>${sc.lighting || 'Cinematic Lighting'}</span>
+          <span>${escapeHtml(sc.lighting || 'Cinematic Lighting')}</span>
         </label>
         <textarea rows="2" placeholder="Shot description: subjects, camera lens, movement, lighting atmosphere..." class="scene-prompt-input w-full bg-obsidian border border-borderSubtle text-[10px] text-zinc-300 rounded p-1.5 outline-none font-sans resize-none" data-idx="${idx}">${escapeHtml(sc.video_prompt || sc.shot_prompt || '')}</textarea>
       </div>
@@ -591,91 +602,13 @@ function renderSceneCards() {
   refreshLucide();
 }
 
-function renderArchetypeFields(sc, idx) {
-  if (sc.visual_code) {
-    return `
-      <div class="p-2.5 rounded bg-zinc-950/80 border border-borderSubtle space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="text-[9px] font-mono text-sageMuted uppercase flex items-center gap-1.5 font-semibold">
-            <span class="w-1.5 h-1.5 rounded-full bg-sageMuted"></span>
-            AI Bespoke Vector Artwork
-          </span>
-          <span class="text-[9px] font-mono text-zinc-500">Autonomous SVG Code</span>
-        </div>
-        <div class="w-full h-28 bg-obsidian rounded border border-borderSubtle flex items-center justify-center p-2 overflow-hidden shadow-inner">
-          ${sc.visual_code}
-        </div>
-        <div class="space-y-1">
-          <label class="text-[9px] font-mono text-zinc-500 flex justify-between">
-            <span>SVG Vector Code (AI Generated)</span>
-            <span class="text-[8px] text-zinc-600 font-mono">Live Editable</span>
-          </label>
-          <textarea rows="2" class="scene-visual-code-input w-full bg-obsidian border border-borderSubtle text-[9px] font-mono text-zinc-400 rounded p-1 resize-y" data-idx="${idx}">${escapeHtml(sc.visual_code)}</textarea>
-        </div>
-      </div>
-    `;
-  }
-
-  const type = sc.layout || sc.type || '';
-
-  if (type === 'terminal_code_stream') {
-    return `
-      <div class="p-2 rounded bg-zinc-950/80 border border-borderSubtle space-y-1.5">
-        <div class="flex items-center justify-between">
-          <input type="text" placeholder="Filename (e.g. engine.ts)" value="${escapeHtml(sc.filename || 'runtime.ts')}" class="scene-filename-input w-40 bg-obsidian border border-borderSubtle text-[10px] font-mono text-zinc-300 rounded px-1.5 py-0.5" data-idx="${idx}">
-          <span class="text-[9px] font-mono text-zinc-500">TypeScript / CLI</span>
-        </div>
-        <textarea rows="2" placeholder="Code lines (one per line)" class="scene-code-input w-full bg-obsidian border border-borderSubtle text-[10px] font-mono text-zinc-300 rounded p-1.5 resize-none" data-idx="${idx}">${escapeHtml((sc.code_lines || ['const engine = new CineMatrix();', 'await engine.render({ resolution: "1080p" });']).join('\n'))}</textarea>
-      </div>
-    `;
-  }
-
-  if (type === 'financial_telemetry') {
-    return `
-      <div class="p-2 rounded bg-zinc-950/80 border border-borderSubtle grid grid-cols-3 gap-1.5">
-        <input type="text" placeholder="Ticker (BTC/USD)" value="${escapeHtml(sc.ticker || '$AXIOM')}" class="scene-ticker-input bg-obsidian border border-borderSubtle text-[10px] font-mono text-zinc-300 rounded px-1.5 py-0.5" data-idx="${idx}">
-        <input type="text" placeholder="Price ($94,820)" value="${escapeHtml(sc.price || '$148.92')}" class="scene-price-input bg-obsidian border border-borderSubtle text-[10px] font-mono text-zinc-300 rounded px-1.5 py-0.5" data-idx="${idx}">
-        <input type="text" placeholder="Delta (+28.4%)" value="${escapeHtml(sc.delta || '+34.2%')}" class="scene-delta-input bg-obsidian border border-borderSubtle text-[10px] font-mono text-sageMuted rounded px-1.5 py-0.5" data-idx="${idx}">
-      </div>
-    `;
-  }
-
-  if (type === 'split_comparison') {
-    return `
-      <div class="p-2 rounded bg-zinc-950/80 border border-borderSubtle grid grid-cols-2 gap-1.5">
-        <input type="text" placeholder="Left State (Legacy / Before)" value="${escapeHtml(sc.left_label || 'Legacy Pipelines')}" class="scene-left-input bg-obsidian border border-borderSubtle text-[10px] text-zinc-400 rounded px-1.5 py-0.5" data-idx="${idx}">
-        <input type="text" placeholder="Right State (CineMatrix / After)" value="${escapeHtml(sc.right_label || 'Autonomous Studio')}" class="scene-right-input bg-obsidian border border-borderSubtle text-[10px] text-zinc-200 rounded px-1.5 py-0.5" data-idx="${idx}">
-      </div>
-    `;
-  }
-
-  if (type === 'bento_grid_v2' || type === 'blueprint_reveal') {
-    return `
-      <div class="p-2 rounded bg-zinc-950/80 border border-borderSubtle space-y-1">
-        <input type="text" placeholder="Pills / Feature Tags (comma separated)" value="${escapeHtml((sc.pills || ['Ultra-low Latency', 'Zero AI Slop', '1080p Master']).join(', '))}" class="scene-pills-input w-full bg-obsidian border border-borderSubtle text-[10px] text-zinc-300 rounded px-1.5 py-0.5" data-idx="${idx}">
-      </div>
-    `;
-  }
-
-  if (type === 'brand_stinger_outro') {
-    return `
-      <div class="p-2 rounded bg-zinc-950/80 border border-borderSubtle grid grid-cols-2 gap-1.5">
-        <input type="text" placeholder="Brand Name" value="${escapeHtml(sc.brand_name || sc.brand_title || currentStoryboard.title || 'CineMatrix')}" class="scene-brand-input bg-obsidian border border-borderSubtle text-[10px] text-zinc-200 rounded px-1.5 py-0.5" data-idx="${idx}">
-        <input type="text" placeholder="Web URL / Handle" value="${escapeHtml(sc.web_url || 'cinematrix.ai')}" class="scene-url-input bg-obsidian border border-borderSubtle text-[10px] font-mono text-zinc-400 rounded px-1.5 py-0.5" data-idx="${idx}">
-      </div>
-    `;
-  }
-
-  return '';
-}
-
 function attachSceneListeners() {
-  document.querySelectorAll('.scene-archetype-select').forEach(sel => {
+  document.querySelectorAll('.scene-composition-select').forEach(sel => {
     sel.addEventListener('change', (e) => {
       const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].composition = e.target.value;
       currentStoryboard.scenes[idx].type = e.target.value;
       currentStoryboard.scenes[idx].layout = e.target.value;
-      renderSceneCards();
       syncStoryboardJson();
     });
   });
@@ -688,10 +621,63 @@ function attachSceneListeners() {
     });
   });
 
-  document.querySelectorAll('.scene-theme-select').forEach(sel => {
-    sel.addEventListener('change', (e) => {
+  document.querySelectorAll('.scene-duration-input').forEach(inp => {
+    inp.addEventListener('change', (e) => {
       const idx = parseInt(e.target.dataset.idx);
-      currentStoryboard.scenes[idx].bg_theme = e.target.value;
+      currentStoryboard.scenes[idx].duration = parseFloat(e.target.value) || 3.0;
+      updateTimelineStats();
+      syncStoryboardJson();
+    });
+  });
+
+  document.querySelectorAll('.scene-badge-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].badge = e.target.value;
+      syncStoryboardJson();
+    });
+  });
+
+  document.querySelectorAll('.scene-headline-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].headline = e.target.value;
+      syncStoryboardJson();
+    });
+  });
+
+  document.querySelectorAll('.scene-subtext-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].subtext = e.target.value;
+      syncStoryboardJson();
+    });
+  });
+
+  document.querySelectorAll('.scene-prompt-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].video_prompt = e.target.value;
+      syncStoryboardJson();
+    });
+  });
+
+  document.querySelectorAll('.scene-visual-code-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].visual_code = e.target.value;
+      const preview = document.getElementById(`svg_preview_${idx}`);
+      if (preview) {
+        preview.innerHTML = e.target.value;
+      }
+      syncStoryboardJson();
+    });
+  });
+
+  document.querySelectorAll('.scene-animation-css-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].animation_css = e.target.value;
       syncStoryboardJson();
     });
   });
@@ -896,25 +882,30 @@ function handleAddScene() {
   }
 
   const nextIdx = currentStoryboard.scenes.length;
-  const archetypesList = ['kinetic_manifesto', 'terminal_code_stream', 'product_showcase', 'financial_telemetry', 'split_comparison', 'bento_grid_v2', 'metric_impact_matrix', 'brand_stinger_outro'];
-  const assignedArchetype = archetypesList[nextIdx % archetypesList.length];
+  const assignedComp = COMPOSITIONS[nextIdx % COMPOSITIONS.length].id;
+  const pal = currentStoryboard.palette || {};
+  const accentCol = pal.accent || '#38BDF8';
 
   currentStoryboard.scenes.push({
-    type: assignedArchetype,
-    layout: assignedArchetype,
+    composition: assignedComp,
+    type: assignedComp,
+    layout: assignedComp,
     duration: 3.5,
-    bg_theme: "dark_grid",
     transition_out: TRANSITIONS[nextIdx % TRANSITIONS.length].id,
-    badge: `0${nextIdx + 1} // ${assignedArchetype.toUpperCase()}`,
+    badge: `0${nextIdx + 1} // ${assignedComp.toUpperCase().replace('_', ' ')}`,
     headline: "Engineered for Velocity",
-    subtext: "Precision programmatic media generation",
+    subtext: "Dynamic autonomous media synthesis with bespoke visual architecture",
+    visual_code: `<svg viewBox='0 0 800 600' xmlns='http://www.w3.org/2000/svg'><circle cx='400' cy='300' r='180' stroke='${accentCol}' stroke-width='3' fill='none' stroke-dasharray='12 8' class='anim-spin'/><circle cx='400' cy='300' r='100' fill='${accentCol}' opacity='0.2'/><path d='M300 300 L500 300 M400 200 L400 400' stroke='${accentCol}' stroke-width='2'/></svg>`,
+    animation_css: `@keyframes spinArc { 100% { transform: rotate(360deg); transform-origin: 400px 300px; } } .anim-spin { animation: spinArc 20s linear infinite; }`,
+    camera: "Smooth dolly forward with subtle lens flare",
+    lighting: "Directional technical rim light",
     video_prompt: "High-definition technical cinema shot, crisp dynamic motion, subtle camera push, clean lighting"
   });
 
   renderSceneCards();
   startRenderBtn.disabled = false;
   syncStoryboardJson();
-  logToTerminal(`Added shot ${currentStoryboard.scenes.length} (${assignedArchetype}).`);
+  logToTerminal(`Added shot ${currentStoryboard.scenes.length} (${assignedComp}).`);
 }
 
 function handleClearScenes() {
