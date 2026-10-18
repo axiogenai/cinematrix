@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import subprocess
+import shutil
 import cv2
 import numpy as np
 
@@ -12,7 +13,7 @@ from .html_motion_generator import generate_motion_html
 class DynamicChromiumVideoEngine:
     def __init__(self, ffmpeg_path: str = None, node_exe: str = "node"):
         self.node_exe = node_exe
-        self.ffmpeg_path = ffmpeg_path or r"C:\Users\aditya\node_modules\ffmpeg-static\ffmpeg.exe"
+        self.ffmpeg_path = ffmpeg_path or os.getenv("FFMPEG_PATH") or shutil.which("ffmpeg") or "ffmpeg"
         self.renderer_js = os.path.join(os.path.dirname(os.path.abspath(__file__)), "chromium_renderer.js")
 
     def render_storyboard(self, storyboard: dict, output_dir: str, progress_callback=None) -> dict:
