@@ -15,18 +15,21 @@ class CreativeDirectorError(RuntimeError):
 
 class GroqCreativeDirector:
     def __init__(self, api_key=None, model=None):
-        configured_key = api_key if api_key is not None else os.getenv("GROQ_API_KEY")
-        if not configured_key:
-            env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
-            if os.path.isfile(env_file):
-                try:
-                    with open(env_file, "r", encoding="utf-8-sig") as ef:
-                        for line in ef:
-                            if line.strip().startswith("GROQ_API_KEY="):
-                                configured_key = line.strip().split("=", 1)[1].strip()
-                                break
-                except OSError:
-                    pass
+        if api_key is not None:
+            configured_key = api_key
+        else:
+            configured_key = os.getenv("GROQ_API_KEY")
+            if not configured_key:
+                env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+                if os.path.isfile(env_file):
+                    try:
+                        with open(env_file, "r", encoding="utf-8-sig") as ef:
+                            for line in ef:
+                                if line.strip().startswith("GROQ_API_KEY="):
+                                    configured_key = line.strip().split("=", 1)[1].strip()
+                                    break
+                    except OSError:
+                        pass
         configured_key = (configured_key or "").strip()
         self.api_key = configured_key if configured_key and configured_key.lower() not in {
             "your_groq_api_key_here", "your_api_key_here", "replace_me", "changeme"

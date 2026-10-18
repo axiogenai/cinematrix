@@ -232,6 +232,32 @@ def list_videos():
     return {"videos": videos}
 
 
+@app.delete("/api/videos/{filename}")
+def delete_video(filename: str):
+    if os.path.basename(filename) != filename or filename in {".", ".."}:
+        raise HTTPException(status_code=400, detail="Invalid filename.")
+    if not filename.endswith(".mp4"):
+        raise HTTPException(status_code=400, detail="Only .mp4 files can be deleted.")
+    
+    file_path = os.path.join(OUTPUT_DIR, filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Video not found.")
+    
+    # Remove video and associated assets (thumb, stage, audio)
+    base_id = filename[:-4]
+    deleted_files = []
+    for pattern in [filename, f"{base_id}_thumb.jpg", f"{base_id}_stage.html", f"{base_id}_audio.wav"]:
+        target = os.path.join(OUTPUT_DIR, pattern)
+        if os.path.isfile(target):
+            try:
+                os.remove(target)
+                deleted_files.append(pattern)
+            except OSError:
+                pass
+                
+    return {"success": True, "deleted": deleted_files}
+
+
 @app.get("/output/{filename}")
 def serve_output_file(filename: str):
     if os.path.basename(filename) != filename or filename in {".", ".."}:

@@ -1,18 +1,38 @@
-/* CineMatrix Media Studio — Ultra-Restrained Matte Theme */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* CineMatrix AI — Media Studio Professional Theme
+   Engineered under strict Anti-Slop & Zero-Glow Mandates:
+   - Matte Obsidian, Carbon, Technical Zinc, Desaturated Accents
+   - Static 1px borders, zero neon halos, zero glows, zero blur drop-shadows
+   - High information density, typographic clarity, Lucide iconography
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --bg-base: #09090b;
-  --bg-card: #121215;
-  --bg-card-hover: #18181c;
-  --bg-surface: #18181b;
+  --bg-obsidian: #09090b;
+  --bg-carbon: #111115;
+  --bg-surface: #16161b;
+  --bg-card: #141419;
+  --bg-card-hover: #1c1c23;
+  --bg-elevated: #1e1e26;
+  
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(255, 255, 255, 0.22);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-focus: rgba(255, 255, 255, 0.28);
+  
   --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
-  --accent-sage: #a3be8c;
-  --accent-brick: #bf616a;
+  --text-faint: #52525b;
+  
+  /* Anti-Slop Functional Indicators: desaturated, low-intensity */
+  --indicator-sage: #84a98c;
+  --indicator-sage-bg: rgba(132, 169, 140, 0.12);
+  --indicator-brick: #c25953;
+  --indicator-brick-bg: rgba(194, 89, 83, 0.12);
+  --indicator-bronze: #c29b63;
+  --indicator-bronze-bg: rgba(194, 155, 99, 0.12);
+  --indicator-slate: #94a3b8;
+  --indicator-slate-bg: rgba(148, 163, 184, 0.12);
 }
 
 * {
@@ -20,13 +40,14 @@
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-color: var(--bg-base);
+  background-color: var(--bg-obsidian);
   color: var(--text-primary);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow-x: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -34,90 +55,159 @@ body {
 
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-base);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #27272a;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
 }
 
-/* Code font helper */
+/* Typography Helpers */
 .font-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', Consolas, monospace;
 }
 
-/* Subtle transitions */
-.transition-all {
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Border styles */
+/* Precision 1px Static Borders */
 .border-subtle {
   border: 1px solid var(--border-subtle);
 }
-
-.border-subtle:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+.border-medium {
+  border: 1px solid var(--border-medium);
 }
 
-/* Restrained Buttons */
+/* Studio Buttons */
 .btn-primary {
   background-color: #f4f4f5;
   color: #09090b;
-  font-weight: 500;
-  border-radius: 8px;
+  font-weight: 600;
+  border-radius: 6px;
   border: 1px solid transparent;
   padding: 8px 16px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.12s ease, opacity 0.12s ease;
 }
-
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #ffffff;
 }
-
 .btn-primary:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  background-color: #18181b;
-  color: #f4f4f5;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid var(--border-subtle);
-  padding: 8px 14px;
+  padding: 7px 12px;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-medium);
+}
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.btn-secondary:hover {
-  background-color: #27272a;
-  border-color: rgba(255, 255, 255, 0.16);
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.btn-ghost:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
 }
 
-/* Scene Card Active State */
+/* Scene Cards */
 .scene-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  padding: 14px;
-  transition: border-color 0.15s ease;
+  border-radius: 8px;
+  padding: 12px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
-
 .scene-card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: var(--border-medium);
+}
+.scene-card.selected {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: var(--bg-card-hover);
 }
 
-.scene-card.active {
-  border-color: rgba(255, 255, 255, 0.35);
-  background: #15151a;
+/* Form Controls & Inputs */
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  background-color: var(--bg-obsidian);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  transition: border-color 0.12s ease;
+}
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+/* Spectrum UI Insight Metric Cards */
+.metric-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+/* Video Stage Aspect Bounds */
+.stage-16-9 {
+  width: 100%;
+  max-width: 860px;
+  aspect-ratio: 16 / 9;
+}
+.stage-9-16 {
+  height: 520px;
+  aspect-ratio: 9 / 16;
+}
+.stage-1-1 {
+  height: 480px;
+  aspect-ratio: 1 / 1;
+}
+.stage-4-5 {
+  height: 500px;
+  aspect-ratio: 4 / 5;
+}
+
+/* Modal Backdrop */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+}
+
+/* Tab Active State */
+.studio-tab.active {
+  color: var(--text-primary);
+  border-bottom: 2px solid #f4f4f5;
+  background: rgba(255, 255, 255, 0.03);
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CineMatrix AI — Programmatic Video & Media Studio</title>
+  <title>CineMatrix AI — Programmatic Cinema & Motion Studio</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -13,11 +13,17 @@
         extend: {
           colors: {
             obsidian: '#09090b',
-            carbon: '#121215',
-            zincSub: '#18181b',
-            borderSub: 'rgba(255, 255, 255, 0.08)',
-            borderFocus: 'rgba(255, 255, 255, 0.22)',
-            sageMuted: '#a3be8c',
+            carbon: '#111115',
+            surface: '#16161b',
+            card: '#141419',
+            cardHover: '#1c1c23',
+            borderSubtle: 'rgba(255, 255, 255, 0.08)',
+            borderMedium: 'rgba(255, 255, 255, 0.14)',
+            borderFocus: 'rgba(255, 255, 255, 0.28)',
+            sageMuted: '#84a98c',
+            brickMuted: '#c25953',
+            bronzeMuted: '#c29b63',
+            slateMuted: '#94a3b8'
           },
           fontFamily: {
             sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
@@ -31,158 +37,197 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="bg-obsidian text-zinc-100 flex flex-col h-screen select-none">
+<body class="bg-obsidian text-zinc-100 flex flex-col h-screen select-none overflow-hidden">
 
-  <!-- Top Navigation Header -->
-  <header class="h-14 border-b border-borderSub px-6 flex items-center justify-between shrink-0 bg-obsidian">
+  <!-- Top Studio Header -->
+  <header class="h-13 border-b border-borderSubtle px-5 flex items-center justify-between shrink-0 bg-obsidian z-20">
+    <!-- Studio Brand & Active Session -->
     <div class="flex items-center gap-3">
-      <!-- Minimalist Vector Emblem -->
+      <!-- Minimalist Vector Monogram -->
       <div class="w-7 h-7 rounded border border-zinc-700 bg-zinc-900 flex items-center justify-center">
-        <svg class="w-4 h-4 text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="w-3.5 h-3.5 text-zinc-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <polygon points="12 2 2 22 22 22 12 2"></polygon>
         </svg>
       </div>
       <div class="flex items-baseline gap-2">
-        <span class="font-semibold tracking-tight text-sm text-zinc-100">CineMatrix</span>
-        <span class="text-xs text-zinc-500 font-mono">v2.0 PRO</span>
+        <span class="font-semibold tracking-tight text-xs text-zinc-100">CineMatrix</span>
+        <span class="text-[10px] text-zinc-500 font-mono">v4.0 PRO</span>
       </div>
-      <span class="text-zinc-700">/</span>
-      <!-- Telemetry Pill: AI creative director -->
-      <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400">
-        <span class="w-1.5 h-1.5 rounded-full bg-sageMuted"></span>
-        <span>AI Creative Director</span>
+      <span class="text-zinc-800">/</span>
+      
+      <!-- Telemetry Pill: Groq Creative Director Status -->
+      <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-400">
+        <span id="directorStatusDot" class="w-1.5 h-1.5 rounded-full bg-sageMuted"></span>
+        <span id="directorStatusText">AI Creative Director Ready</span>
+      </div>
+
+      <!-- Active Mode Badge -->
+      <div id="activeEngineBadge" class="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-900/80 border border-zinc-800 text-[10px] font-mono text-zinc-400">
+        <i data-lucide="layers" class="w-3 h-3 text-zinc-400"></i>
+        <span id="activeEngineLabel">Chromium Motion Graphics</span>
       </div>
     </div>
 
-    <!-- Right Actions -->
-    <div class="flex items-center gap-3">
-      <!-- Preset Dropdown -->
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-zinc-500">Preset:</span>
-        <select id="presetSelect" class="bg-zinc-900 border border-borderSub text-xs text-zinc-300 rounded-md px-2.5 py-1.5 outline-none focus:border-borderFocus">
-          <option value="">Load Preset Showcase...</option>
+    <!-- Right Topbar Controls -->
+    <div class="flex items-center gap-2.5">
+      <!-- Preset Showcase Dropdown -->
+      <div class="flex items-center gap-1.5">
+        <span class="text-[11px] text-zinc-500 hidden md:inline">Showcase:</span>
+        <select id="presetSelect" class="bg-zinc-900 border border-borderSubtle text-xs text-zinc-300 rounded px-2.5 py-1 outline-none focus:border-borderFocus">
+          <option value="">Load Film Preset...</option>
         </select>
       </div>
 
-      <!-- Vault Toggle -->
-      <button id="toggleVaultBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-900 border border-borderSub text-xs text-zinc-300 hover:bg-zinc-800 transition-all">
-        <i data-lucide="film" class="w-3.5 h-3.5"></i>
-        <span>Media Vault (<span id="vaultCount">0</span>)</span>
+      <!-- Media Vault Modal Trigger -->
+      <button id="toggleVaultBtn" class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-borderSubtle text-xs text-zinc-300 hover:bg-zinc-800 transition-all">
+        <i data-lucide="film" class="w-3.5 h-3.5 text-zinc-400"></i>
+        <span>Vault (<span id="vaultCount">0</span>)</span>
       </button>
 
-      <!-- Status Indicator -->
-      <div class="text-[11px] font-mono text-zinc-500 flex items-center gap-1.5 pl-2 border-l border-zinc-800">
+      <!-- System Diagnostic Status -->
+      <div class="text-[10px] font-mono text-zinc-500 flex items-center gap-1.5 pl-2 border-l border-zinc-800">
         <i data-lucide="cpu" class="w-3.5 h-3.5 text-zinc-400"></i>
-        <span>FFmpeg Ready</span>
+        <span class="hidden lg:inline">FFmpeg 7.1 / Chromium 1080p</span>
       </div>
     </div>
   </header>
 
-  <!-- Main Studio Workspace -->
+  <!-- Main Multi-Column Studio Workspace -->
   <main class="flex-1 flex overflow-hidden">
     
-    <!-- Left Column: Creative Director & Storyboard Studio -->
-    <section class="w-[480px] border-r border-borderSub flex flex-col shrink-0 bg-carbon overflow-hidden">
-      <!-- Studio Tabs Header -->
-      <div class="p-4 border-b border-borderSub flex items-center justify-between">
+    <!-- Left Column: Creative Director & Interactive Shot Timeline (520px wide) -->
+    <section class="w-[500px] border-r border-borderSubtle flex flex-col shrink-0 bg-carbon overflow-hidden z-10">
+      
+      <!-- Studio Panel Subheader -->
+      <div class="px-4 py-2.5 border-b border-borderSubtle flex items-center justify-between bg-zinc-950/40">
         <div class="flex items-center gap-2">
-          <i data-lucide="sliders" class="w-4 h-4 text-zinc-400"></i>
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-300">Creative Brief & Script</h2>
+          <i data-lucide="film" class="w-3.5 h-3.5 text-zinc-400"></i>
+          <h2 class="text-[11px] font-semibold uppercase tracking-wider text-zinc-300">Film Composer & Timeline</h2>
         </div>
-        <span class="text-[11px] font-mono text-zinc-500">Step 1</span>
+        <div class="flex items-center gap-2">
+          <span id="timelineStatsBadge" class="text-[10px] font-mono text-zinc-500">0 shots · 0.0s</span>
+        </div>
       </div>
 
-      <!-- Scrollable Controls & Scene Editor -->
+      <!-- Scrollable Composer Controls & Scene Editor -->
       <div class="flex-1 overflow-y-auto p-4 space-y-4">
         
-        <!-- Prompt Box -->
-        <div class="space-y-1.5">
-          <label class="text-xs font-medium text-zinc-400 flex justify-between">
-            <span>Video Prompt & Creative Directive</span>
-            <span class="text-[10px] text-zinc-500 font-mono">Creative Brief</span>
-          </label>
-          <textarea id="promptInput" rows="3" class="w-full bg-obsidian border border-borderSub rounded-lg p-3 text-xs text-zinc-200 outline-none focus:border-borderFocus resize-none font-sans" placeholder="e.g. Create a 15-second cinematic product film for an AI verification engine with code showcase and benchmark telemetry..."></textarea>
+        <!-- Section 1: Creative Brief & Directives -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
+              <i data-lucide="sparkles" class="w-3 h-3 text-zinc-400"></i>
+              <span>Creative Prompt & Cinematic Directive</span>
+            </label>
+            <span class="text-[10px] text-zinc-500 font-mono">Dynamic AI Planning</span>
+          </div>
+
+          <textarea id="promptInput" rows="3" class="w-full bg-obsidian border border-borderSubtle rounded-lg p-2.5 text-xs text-zinc-200 outline-none focus:border-borderFocus resize-none font-sans" placeholder="Describe any video or campaign: e.g. High-impact 15s launch film for a next-gen developer platform with live terminal stream, telemetry charts, and kinetic typography..."></textarea>
           
-          <!-- Quick Suggestion Chips -->
-          <div class="flex flex-wrap gap-1.5 pt-1">
-            <button class="prompt-chip text-[10px] px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all" data-prompt="Team Axiogen launch reel: UI/UX Web Design, AI & Agentic Automation, Cybersecurity & Pen-testing, Custom Software & ERP">Axiogen Services Showreel</button>
-            <button class="prompt-chip text-[10px] px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all" data-prompt="Minimalist Apple-inspired product film for autonomous AI code generation engine">Minimalist Brand Film</button>
-            <button class="prompt-chip text-[10px] px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all" data-prompt="High-impact 12-second vertical reel for a viral developer productivity platform">9:16 SaaS Launch Reel</button>
-            <button class="prompt-chip text-[10px] px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all" data-prompt="Cyber telemetry showcase featuring 12ms latency, 99.8% precision, and multi-threaded execution">Metric Telemetry Promo</button>
+          <!-- Quick Creative Prompt Chips -->
+          <div class="flex flex-wrap gap-1 pt-0.5">
+            <button class="prompt-chip text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all" data-prompt="Cinematic hardware showcase for an autonomous robotics arm: multi-axis precision, titanium finish, load benchmarks, and dynamic lighting">Hardware Launch Film</button>
+            <button class="prompt-chip text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all" data-prompt="High-impact 12-second vertical reel for a viral developer productivity platform: live code stream, 99.8% precision, and kinetic wordmark">9:16 Developer Reel</button>
+            <button class="prompt-chip text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all" data-prompt="Minimalist Apple-inspired product film: clean typography, 3D card elevation, before-vs-after comparison, and quiet luxury aesthetic">Minimalist Brand Film</button>
+            <button class="prompt-chip text-[10px] px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 transition-all" data-prompt="DeFi protocol telemetry: live candlestick ticker, token parade, security audit shield, and 12ms execution speed">Crypto Telemetry Promo</button>
           </div>
         </div>
 
-        <!-- Parameters Grid -->
-        <div class="grid grid-cols-3 gap-2">
+        <!-- Section 2: Production Parameters Grid -->
+        <div class="grid grid-cols-4 gap-2 pt-1 border-t border-borderSubtle">
           <!-- Aspect Ratio -->
           <div class="space-y-1">
-            <label class="text-[11px] text-zinc-400">Aspect Ratio</label>
-            <select id="aspectRatioSelect" class="w-full bg-obsidian border border-borderSub text-xs text-zinc-300 rounded-md p-2 outline-none focus:border-borderFocus">
-              <option value="16:9">16:9 Cinema</option>
-              <option value="9:16">9:16 Reel (Mobile)</option>
+            <label class="text-[10px] text-zinc-400 uppercase tracking-wider font-mono">Aspect</label>
+            <select id="aspectRatioSelect" class="w-full bg-obsidian border border-borderSubtle text-[11px] text-zinc-300 rounded p-1.5 outline-none focus:border-borderFocus">
+              <option value="16:9" selected>16:9 Cinema</option>
+              <option value="9:16">9:16 Mobile</option>
               <option value="1:1">1:1 Square</option>
+              <option value="4:5">4:5 Social</option>
             </select>
           </div>
 
-          <!-- Duration -->
+          <!-- Target Duration -->
           <div class="space-y-1">
-            <label class="text-[11px] text-zinc-400">Duration</label>
-            <select id="durationSelect" class="w-full bg-obsidian border border-borderSub text-xs text-zinc-300 rounded-md p-2 outline-none focus:border-borderFocus">
-              <option value="12">12 Seconds</option>
-              <option value="14" selected>14 Seconds</option>
-              <option value="18">18 Seconds</option>
-              <option value="30">30 Seconds</option>
+            <label class="text-[10px] text-zinc-400 uppercase tracking-wider font-mono">Duration</label>
+            <select id="durationSelect" class="w-full bg-obsidian border border-borderSubtle text-[11px] text-zinc-300 rounded p-1.5 outline-none focus:border-borderFocus">
+              <option value="6">6s Teaser</option>
+              <option value="10">10s Short</option>
+              <option value="12">12s Standard</option>
+              <option value="14" selected>14s Story</option>
+              <option value="18">18s Master</option>
+              <option value="30">30s Extended</option>
+            </select>
+          </div>
+
+          <!-- Framerate -->
+          <div class="space-y-1">
+            <label class="text-[10px] text-zinc-400 uppercase tracking-wider font-mono">Framerate</label>
+            <select id="fpsSelect" class="w-full bg-obsidian border border-borderSubtle text-[11px] text-zinc-300 rounded p-1.5 outline-none focus:border-borderFocus">
+              <option value="24" selected>24 fps Film</option>
+              <option value="30">30 fps Broadcast</option>
+              <option value="60">60 fps Ultra</option>
             </select>
           </div>
 
           <!-- Soundtrack Mood -->
           <div class="space-y-1">
-            <label class="text-[11px] text-zinc-400">Soundtrack</label>
-            <select id="moodSelect" class="w-full bg-obsidian border border-borderSub text-xs text-zinc-300 rounded-md p-2 outline-none focus:border-borderFocus">
-              <option value="cinematic_tech" selected>Cinematic Tech</option>
+            <label class="text-[10px] text-zinc-400 uppercase tracking-wider font-mono">Audio</label>
+            <select id="moodSelect" class="w-full bg-obsidian border border-borderSubtle text-[11px] text-zinc-300 rounded p-1.5 outline-none focus:border-borderFocus">
+              <option value="cinematic_tech" selected>Cinema Tech</option>
               <option value="minimalist_apple">Apple Ambient</option>
-              <option value="high_energy_saas">High-Energy SaaS</option>
+              <option value="high_energy_saas">High Energy</option>
+              <option value="cyber_pulse">Cyber Drone</option>
+              <option value="none">Mute Soundtrack</option>
             </select>
           </div>
         </div>
 
-        <!-- Rendering Engine Selector -->
-        <div class="space-y-1">
-          <label class="text-[11px] text-zinc-400 flex justify-between">
-            <span>Rendering Pipeline Engine</span>
-            <span class="text-[10px] text-zinc-500 font-mono">Render Mode</span>
-          </label>
-          <select id="engineSelect" class="w-full bg-obsidian border border-borderSub text-xs text-zinc-300 rounded-md p-2 outline-none focus:border-borderFocus">
-            <option value="comfyui" selected>Real AI Video Generation (Local ComfyUI + Open Video Model)</option>
-            <option value="chromium">Motion Graphics (HTML / SVG / Chromium)</option>
-            <option value="opencv">Procedural Pixel Graphics (OpenCV)</option>
-          </select>
-          <p class="text-[10px] text-zinc-500 mt-1">Real AI footage requires a configured local ComfyUI video workflow. If unavailable, CineMatrix reports the error instead of substituting a template.</p>
-        </div>
-
-        <!-- AI Storyboard Generation Button -->
-        <button id="generateStoryboardBtn" class="w-full py-2.5 px-4 rounded-lg bg-zinc-100 hover:bg-white text-obsidian font-medium text-xs flex items-center justify-center gap-2 transition-all">
-          <i data-lucide="wand-2" class="w-4 h-4"></i>
-          <span>Generate Original Storyboard</span>
-        </button>
-
-        <!-- Storyboard Scene List -->
-        <div class="pt-2 border-t border-borderSub">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+        <!-- Section 3: Render Engine Mode -->
+        <div class="space-y-1.5 pt-1 border-t border-borderSubtle">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-medium text-zinc-300 flex items-center gap-1.5">
               <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>Scene Timeline (<span id="sceneCount">0</span> scenes)</span>
-            </span>
-            <button id="addSceneBtn" class="text-[11px] text-zinc-400 hover:text-zinc-200 flex items-center gap-1 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800">
-              <i data-lucide="plus" class="w-3 h-3"></i> Add Scene
-            </button>
+              <span>Render Engine Pipeline</span>
+            </label>
+            <span id="engineBadgeInfo" class="text-[10px] font-mono text-zinc-500">1080p Broadcast</span>
           </div>
 
-          <!-- Scenes Container -->
-          <div id="scenesContainer" class="space-y-2.5">
-            <!-- Dynamic Scene Cards rendered by app.js -->
-            <div class="p-6 rounded-lg border border-dashed border-zinc-800 text-center text-xs text-zinc-500">
-              Enter a prompt above and click "Generate Storyboard" or load a Preset.
+          <select id="engineSelect" class="w-full bg-obsidian border border-borderSubtle text-xs text-zinc-200 rounded p-2 outline-none focus:border-borderFocus font-medium">
+            <option value="chromium" selected>Chromium Motion Graphics (14 Archetypes + 8 Cinema Transitions + Procedural Audio)</option>
+            <option value="comfyui">ComfyUI Generative AI (Local Neural Diffusion Video Models)</option>
+            <option value="opencv">OpenCV Procedural Matrix (High-Speed Pixel Graphics)</option>
+          </select>
+          <p id="engineDescription" class="text-[10px] text-zinc-500 leading-relaxed">Broadcast-grade HTML5/CSS3 motion graphics compiled via Chromium headless browser. Dual-scene simultaneous handovers, spring physics, and procedural audio synthesis.</p>
+        </div>
+
+        <!-- Section 4: AI Director Storyboard Generator Button -->
+        <button id="generateStoryboardBtn" class="w-full py-2.5 px-4 rounded-lg bg-zinc-100 hover:bg-white text-obsidian font-semibold text-xs flex items-center justify-center gap-2 transition-all">
+          <i data-lucide="wand-2" class="w-4 h-4"></i>
+          <span>Generate Storyboard (Groq Director)</span>
+        </button>
+
+        <!-- Section 5: Interactive Shot Timeline Header -->
+        <div class="pt-2 border-t border-borderSubtle space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+              <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-zinc-400"></i>
+              <span>Shot Timeline (<span id="sceneCount">0</span> shots)</span>
+            </span>
+            <div class="flex items-center gap-1.5">
+              <button id="addSceneBtn" class="text-[11px] text-zinc-300 hover:text-white flex items-center gap-1 px-2 py-1 rounded bg-zinc-900 border border-borderSubtle hover:bg-zinc-800 transition-all">
+                <i data-lucide="plus" class="w-3 h-3"></i> Add Shot
+              </button>
+              <button id="clearScenesBtn" class="text-[11px] text-zinc-500 hover:text-zinc-300 px-2 py-1 rounded bg-zinc-900/60 border border-zinc-800 transition-all">
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic Scene Cards Container -->
+          <div id="scenesContainer" class="space-y-3">
+            <div class="p-6 rounded-lg border border-dashed border-zinc-800 text-center text-xs text-zinc-500 space-y-2">
+              <i data-lucide="film" class="w-6 h-6 mx-auto text-zinc-600"></i>
+              <p>No shots loaded. Enter a creative prompt above and click "Generate Storyboard" or load a showcase preset.</p>
             </div>
           </div>
         </div>
@@ -190,102 +235,202 @@
       </div>
 
       <!-- Action Footer: Trigger Video Render -->
-      <div class="p-4 border-t border-borderSub bg-obsidian">
+      <div class="p-3.5 border-t border-borderSubtle bg-obsidian flex flex-col gap-1.5">
         <button id="startRenderBtn" disabled class="btn-primary w-full py-2.5 text-xs flex items-center justify-center gap-2">
           <i data-lucide="play" class="w-4 h-4 fill-current"></i>
-          <span>Render Master Video (Python + FFmpeg)</span>
+          <span>Render Master Video</span>
         </button>
+        <div class="flex items-center justify-between text-[10px] font-mono text-zinc-500 px-1">
+          <span>Target: 1080p FHD H.264</span>
+          <span id="footerEstTime">Est: ~4-8s</span>
+        </div>
       </div>
     </section>
 
-    <!-- Right / Center Column: Master Cinema Player & Live Render Telemetry -->
+    <!-- Center Stage: Cinema Master Viewport & Scrubber -->
     <section class="flex-1 flex flex-col bg-obsidian overflow-hidden">
       
-      <!-- Video Player Stage -->
-      <div class="flex-1 flex flex-col items-center justify-center p-6 relative bg-[#060608]">
+      <!-- Viewport Header Toolbar -->
+      <div class="h-10 px-5 border-b border-borderSubtle flex items-center justify-between bg-zinc-950/60">
+        <div class="flex items-center gap-3">
+          <span id="activeVideoTitle" class="text-xs font-semibold text-zinc-200 truncate max-w-[260px]">Cinema Viewport</span>
+          <span id="activeVideoAspect" class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">16:9 Cinema</span>
+          <span id="activeVideoResolution" class="text-[10px] font-mono text-zinc-500">1080p</span>
+          <span id="activeVideoDuration" class="text-[10px] font-mono text-zinc-500">--s</span>
+        </div>
         
-        <!-- Video Container -->
-        <div id="playerContainer" class="max-w-4xl w-full flex items-center justify-center relative rounded-xl border border-borderSub overflow-hidden bg-black shadow-2xl">
-          <video id="masterVideoPlayer" class="w-full max-h-[560px] object-contain rounded-xl" controls playsinline>
+        <div class="flex items-center gap-2">
+          <!-- Inspect Stage HTML Button -->
+          <button id="inspectStageBtn" class="hidden items-center gap-1 px-2.5 py-1 rounded bg-zinc-900 border border-borderSubtle text-[11px] text-zinc-400 hover:text-zinc-200 transition-all">
+            <i data-lucide="code" class="w-3 h-3"></i>
+            <span>Stage HTML</span>
+          </button>
+
+          <!-- Download Master Video Button -->
+          <a id="downloadVideoBtn" href="#" download class="flex items-center gap-1.5 px-3 py-1 rounded-md bg-zinc-100 text-obsidian text-xs font-semibold hover:bg-white transition-all pointer-events-none opacity-40">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Download MP4</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Master Player Stage Canvas -->
+      <div class="flex-1 flex flex-col items-center justify-center p-6 relative bg-[#060608] overflow-hidden">
+        
+        <!-- Aspect-Adaptive Player Frame -->
+        <div id="playerFrame" class="stage-16-9 flex items-center justify-center relative rounded-lg border border-borderSubtle overflow-hidden bg-black shadow-2xl transition-all">
+          <video id="masterVideoPlayer" class="w-full h-full object-contain" playsinline preload="metadata">
             <source id="videoSource" src="" type="video/mp4">
             Your browser does not support HTML5 video.
           </video>
-          <!-- Empty State Placeholder -->
-          <div id="emptyPlayerState" class="absolute inset-0 flex flex-col items-center justify-center bg-obsidian p-6 text-center space-y-3">
-            <div class="w-12 h-12 rounded-full border border-zinc-800 bg-zinc-900 flex items-center justify-center text-zinc-500">
-              <i data-lucide="video" class="w-6 h-6"></i>
+
+          <!-- Empty State Screen -->
+          <div id="emptyPlayerState" class="absolute inset-0 flex flex-col items-center justify-center bg-obsidian p-6 text-center space-y-3 z-10">
+            <div class="w-12 h-12 rounded-lg border border-zinc-800 bg-zinc-900/80 flex items-center justify-center text-zinc-500">
+              <i data-lucide="film" class="w-6 h-6"></i>
             </div>
             <div>
-              <p class="text-xs font-medium text-zinc-300">No Master Video Loaded</p>
-              <p class="text-[11px] text-zinc-500 mt-1 max-w-sm">Generate a storyboard on the left and click "Render Master Video" to compile high-definition MP4 directly through FFmpeg.</p>
+              <p class="text-xs font-semibold text-zinc-300">Cinema Master Viewport Ready</p>
+              <p class="text-[11px] text-zinc-500 mt-1 max-w-sm leading-relaxed">Compose your shots in the timeline on the left and trigger "Render Master Video". The compiled 1080p MP4 will stream here with frame scrubbing.</p>
             </div>
           </div>
         </div>
 
-        <!-- Video Control Bar & Downloader -->
-        <div id="videoMetaBar" class="max-w-4xl w-full mt-4 flex items-center justify-between px-2">
-          <div class="flex items-center gap-3">
-            <span id="activeVideoTitle" class="text-xs font-medium text-zinc-300">Master Film Title</span>
-            <span id="activeVideoAspect" class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">16:9 Cinema</span>
-            <span id="activeVideoDuration" class="text-[10px] font-mono text-zinc-500">--s</span>
+        <!-- Custom Player Scrubber Controls -->
+        <div id="customPlayerControls" class="w-full max-w-3xl mt-4 px-3 py-2 rounded-lg bg-zinc-950/80 border border-borderSubtle flex items-center gap-3">
+          <button id="playPauseBtn" class="text-zinc-300 hover:text-white p-1 rounded transition-colors">
+            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+          </button>
+
+          <!-- Timecode Display -->
+          <div class="text-[10px] font-mono text-zinc-400 tabular-nums shrink-0">
+            <span id="currentTimecode">00:00.00</span> / <span id="totalTimecode">00:00.00</span>
           </div>
-          <div class="flex items-center gap-2">
-            <a id="downloadVideoBtn" href="#" download class="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-100 text-obsidian text-xs font-medium hover:bg-white transition-all pointer-events-none opacity-40">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i>
-              <span>Download MP4</span>
-            </a>
+
+          <!-- Video Scrubber Bar -->
+          <div class="flex-1 relative flex items-center cursor-pointer group py-2" id="scrubberTrackContainer">
+            <div class="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+              <div id="playerProgressFill" class="h-full bg-zinc-200 transition-all duration-75" style="width: 0%;"></div>
+            </div>
           </div>
+
+          <!-- Volume / Mute Toggle -->
+          <button id="volumeToggleBtn" class="text-zinc-400 hover:text-zinc-200 p-1 rounded transition-colors">
+            <i data-lucide="volume-2" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Loop Toggle -->
+          <button id="loopToggleBtn" class="text-zinc-500 hover:text-zinc-200 p-1 rounded transition-colors text-[10px] font-mono" title="Toggle Loop">
+            LOOP
+          </button>
+
+          <!-- Fullscreen Toggle -->
+          <button id="fullscreenBtn" class="text-zinc-400 hover:text-zinc-200 p-1 rounded transition-colors">
+            <i data-lucide="maximize-2" class="w-4 h-4"></i>
+          </button>
         </div>
 
       </div>
 
-      <!-- Bottom Panel: Real-Time Render Execution Bar & Terminal Logs -->
-      <div class="h-44 border-t border-borderSub bg-carbon flex flex-col shrink-0">
-        <!-- Progress Header -->
-        <div class="px-5 py-2.5 border-b border-borderSub flex items-center justify-between text-xs">
+      <!-- Bottom Panel: Pipeline Telemetry, Execution Logs & Storyboard Inspector -->
+      <div class="h-48 border-t border-borderSubtle bg-carbon flex flex-col shrink-0">
+        
+        <!-- Panel Tabs Bar -->
+        <div class="px-4 border-b border-borderSubtle flex items-center justify-between bg-zinc-950/50">
+          <div class="flex items-center">
+            <button class="studio-tab active px-3 py-2 text-xs font-medium text-zinc-300 border-b-2 border-zinc-200 transition-all" data-tab="logs">
+              Execution Stream
+            </button>
+            <button class="studio-tab px-3 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent transition-all" data-tab="telemetry">
+              Performance Telemetry
+            </button>
+            <button class="studio-tab px-3 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 border-b-2 border-transparent transition-all" data-tab="storyboard">
+              Storyboard JSON
+            </button>
+          </div>
+
           <div class="flex items-center gap-3">
-            <span class="font-medium text-zinc-300 flex items-center gap-1.5">
-              <i data-lucide="terminal" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>Pipeline Telemetry & Execution Log</span>
-            </span>
             <span id="renderStatusBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">IDLE</span>
-          </div>
-
-          <!-- Speed & ETA telemetry -->
-          <div class="flex items-center gap-4 text-[11px] font-mono text-zinc-500">
-            <span>FPS: <strong id="telemetryFps" class="text-zinc-300">--</strong></span>
-            <span>Frames: <strong id="telemetryFrames" class="text-zinc-300">-- / --</strong></span>
-            <span>ETA: <strong id="telemetryEta" class="text-zinc-300">--</strong></span>
+            <button id="clearLogsBtn" class="text-[10px] text-zinc-500 hover:text-zinc-300">Clear</button>
           </div>
         </div>
 
-        <!-- Progress Track -->
-        <div class="w-full bg-zinc-900 h-1">
-          <div id="renderProgressBar" class="h-full bg-zinc-100 transition-all duration-200" style="width: 0%;"></div>
+        <!-- Render Progress Ribbon -->
+        <div class="w-full bg-zinc-900/80 h-0.5">
+          <div id="renderProgressBar" class="h-full bg-zinc-100 transition-all duration-150" style="width: 0%;"></div>
         </div>
 
-        <!-- Live Terminal Stream Logs -->
-        <div id="renderLogs" class="flex-1 p-3 overflow-y-auto font-mono text-[11px] text-zinc-400 space-y-1 bg-[#09090b]">
-          <div class="text-zinc-600">[System] CineMatrix Media Studio Engine initialized. Waiting for render dispatch...</div>
+        <!-- Tab 1: Live Execution Stream Logs -->
+        <div id="tabContentLogs" class="tab-content flex-1 p-3 overflow-y-auto font-mono text-[11px] text-zinc-400 space-y-1 bg-[#09090b]">
+          <div class="text-zinc-600">[System] CineMatrix Media Studio Engine initialized. Waiting for dispatch...</div>
         </div>
+
+        <!-- Tab 2: Spectrum UI Performance Telemetry Insight Cards -->
+        <div id="tabContentTelemetry" class="tab-content hidden flex-1 p-3 overflow-y-auto bg-[#09090b]">
+          <div class="grid grid-cols-4 gap-3 max-w-3xl">
+            <!-- FPS Insight -->
+            <div class="metric-box">
+              <span class="text-[10px] font-medium text-zinc-400">Render Speed</span>
+              <p class="mt-1 font-mono text-lg font-medium tabular-nums text-zinc-100" id="telemetryFps">--</p>
+              <span class="text-[10px] font-mono text-zinc-500">Target 24/30 FPS</span>
+            </div>
+
+            <!-- Frame Counter -->
+            <div class="metric-box">
+              <span class="text-[10px] font-medium text-zinc-400">Frames Processed</span>
+              <p class="mt-1 font-mono text-lg font-medium tabular-nums text-zinc-100" id="telemetryFrames">-- / --</p>
+              <span class="text-[10px] font-mono text-zinc-500" id="telemetryPercent">0%</span>
+            </div>
+
+            <!-- ETA -->
+            <div class="metric-box">
+              <span class="text-[10px] font-medium text-zinc-400">Estimated Completion</span>
+              <p class="mt-1 font-mono text-lg font-medium tabular-nums text-zinc-100" id="telemetryEta">--</p>
+              <span class="text-[10px] font-mono text-zinc-500">Remaining</span>
+            </div>
+
+            <!-- Audio Synthesis -->
+            <div class="metric-box">
+              <span class="text-[10px] font-medium text-zinc-400">Audio Track</span>
+              <p class="mt-1 font-mono text-sm font-medium text-zinc-200 truncate" id="telemetryAudio">Stereo 48kHz</p>
+              <span class="text-[10px] font-mono text-zinc-500">Procedural Synth</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Storyboard JSON Tree Inspector -->
+        <div id="tabContentStoryboard" class="tab-content hidden flex-1 p-3 overflow-y-auto bg-[#09090b] relative">
+          <button id="copyJsonBtn" class="absolute top-2 right-3 px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 hover:text-zinc-200 transition-all">
+            Copy JSON
+          </button>
+          <pre id="storyboardJsonView" class="font-mono text-[10px] text-zinc-400 whitespace-pre leading-relaxed">// Active storyboard JSON will appear here after generation...</pre>
+        </div>
+
       </div>
 
     </section>
   </main>
 
   <!-- Media Vault Modal -->
-  <div id="vaultModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-    <div class="w-full max-w-4xl bg-carbon border border-borderSub rounded-xl flex flex-col max-h-[85vh] overflow-hidden shadow-2xl">
-      <div class="p-4 border-b border-borderSub flex items-center justify-between">
-        <div class="flex items-center gap-2">
+  <div id="vaultModal" class="modal-overlay fixed inset-0 z-50 hidden flex items-center justify-center p-6">
+    <div class="w-full max-w-4xl bg-carbon border border-borderSubtle rounded-xl flex flex-col max-h-[85vh] overflow-hidden shadow-2xl">
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-borderSubtle flex items-center justify-between bg-zinc-950/60">
+        <div class="flex items-center gap-2.5">
           <i data-lucide="film" class="w-4 h-4 text-zinc-300"></i>
-          <h3 class="text-sm font-semibold text-zinc-200">Media Vault — Rendered Videos</h3>
+          <div>
+            <h3 class="text-sm font-semibold text-zinc-200">Media Vault</h3>
+            <p class="text-[11px] text-zinc-500">Rendered master videos & production assets</p>
+          </div>
         </div>
-        <button id="closeVaultBtn" class="text-zinc-400 hover:text-zinc-200 text-sm">✕</button>
+        <div class="flex items-center gap-3">
+          <input type="text" id="vaultSearchInput" placeholder="Filter videos..." class="bg-obsidian border border-borderSubtle text-xs text-zinc-300 rounded px-2.5 py-1 outline-none w-48">
+          <button id="closeVaultBtn" class="text-zinc-400 hover:text-zinc-200 text-sm p-1">✕</button>
+        </div>
       </div>
 
-      <!-- Vault Grid -->
-      <div id="vaultGrid" class="flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <!-- Vault Video Cards Grid -->
+      <div id="vaultGrid" class="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         <!-- Rendered dynamically by app.js -->
       </div>
     </div>
