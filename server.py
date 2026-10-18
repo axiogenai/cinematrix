@@ -100,22 +100,8 @@ def get_status():
 
 @app.get("/api/presets")
 def list_presets():
-    # Presets remain available as editable examples, not as the AI's generation strategy.
-    presets = []
-    for filename in glob.glob(os.path.join(PRESETS_DIR, "*.json")):
-        try:
-            with open(filename, "r", encoding="utf-8") as handle:
-                data = json.load(handle)
-            presets.append({
-                "id": data.get("id", os.path.basename(filename).replace(".json", "")),
-                "title": data.get("title", "Untitled Preset"),
-                "aspect_ratio": data.get("aspect_ratio", "16:9"),
-                "duration": sum(float(scene.get("duration", 3.0)) for scene in data.get("scenes", [])),
-                "storyboard": data,
-            })
-        except (OSError, ValueError, TypeError):
-            continue
-    return {"presets": presets}
+    # Presets are removed: AI generates 100% bespoke visual code and storyboards from scratch
+    return {"presets": []}
 
 
 @app.post("/api/storyboard/generate")

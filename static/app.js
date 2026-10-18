@@ -9,7 +9,6 @@ let activeStageHtmlUrl = null;
 let vaultVideosCache = [];
 
 // DOM Elements: Topbar & Settings
-const presetSelect = document.getElementById('presetSelect');
 const toggleVaultBtn = document.getElementById('toggleVaultBtn');
 const vaultCount = document.getElementById('vaultCount');
 const directorStatusDot = document.getElementById('directorStatusDot');
@@ -126,7 +125,6 @@ const BG_THEMES = [
 document.addEventListener('DOMContentLoaded', () => {
   refreshLucide();
   checkSystemStatus();
-  loadPresets();
   loadVaultVideos();
   setupEventListeners();
   updateStageAspectRatio(aspectRatioSelect.value);
@@ -215,8 +213,7 @@ function setupEventListeners() {
     }
   });
 
-  // Presets & Buttons
-  presetSelect.addEventListener('change', handlePresetChange);
+  // Timeline & Render Action Buttons
   generateStoryboardBtn.addEventListener('click', handleGenerateStoryboard);
   startRenderBtn.addEventListener('click', handleStartRender);
   addSceneBtn.addEventListener('click', handleAddScene);
@@ -391,44 +388,7 @@ async function checkSystemStatus() {
   }
 }
 
-// -------------------------------------------------------------
-// PRESETS
-// -------------------------------------------------------------
-async function loadPresets() {
-  try {
-    const res = await fetch('/api/presets');
-    const data = await res.json();
-    presetSelect.innerHTML = '<option value="">Load Film Preset...</option>';
-    (data.presets || []).forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = `${p.title} (${p.aspect_ratio}, ${p.duration}s)`;
-      opt.dataset.storyboard = JSON.stringify(p.storyboard);
-      presetSelect.appendChild(opt);
-    });
-  } catch (err) {
-    console.error('Error loading presets:', err);
-  }
-}
 
-function handlePresetChange() {
-  const selectedOpt = presetSelect.options[presetSelect.selectedIndex];
-  if (!selectedOpt || !selectedOpt.dataset.storyboard) return;
-
-  try {
-    const sb = JSON.parse(selectedOpt.dataset.storyboard);
-    currentStoryboard = sb;
-    aspectRatioSelect.value = sb.aspect_ratio || '16:9';
-    updateStageAspectRatio(sb.aspect_ratio || '16:9');
-    moodSelect.value = sb.mood || 'cinematic_tech';
-    renderSceneCards();
-    startRenderBtn.disabled = false;
-    syncStoryboardJson();
-    logToTerminal(`Preset loaded: "${sb.title}" with ${sb.scenes.length} production shots.`, 'success');
-  } catch (err) {
-    console.error('Invalid preset data:', err);
-  }
-}
 
 // -------------------------------------------------------------
 // GROQ AI STORYBOARD GENERATION
@@ -632,6 +592,30 @@ function renderSceneCards() {
 }
 
 function renderArchetypeFields(sc, idx) {
+  if (sc.visual_code) {
+    return `
+      <div class="p-2.5 rounded bg-zinc-950/80 border border-borderSubtle space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[9px] font-mono text-sageMuted uppercase flex items-center gap-1.5 font-semibold">
+            <span class="w-1.5 h-1.5 rounded-full bg-sageMuted"></span>
+            AI Bespoke Vector Artwork
+          </span>
+          <span class="text-[9px] font-mono text-zinc-500">Autonomous SVG Code</span>
+        </div>
+        <div class="w-full h-28 bg-obsidian rounded border border-borderSubtle flex items-center justify-center p-2 overflow-hidden shadow-inner">
+          ${sc.visual_code}
+        </div>
+        <div class="space-y-1">
+          <label class="text-[9px] font-mono text-zinc-500 flex justify-between">
+            <span>SVG Vector Code (AI Generated)</span>
+            <span class="text-[8px] text-zinc-600 font-mono">Live Editable</span>
+          </label>
+          <textarea rows="2" class="scene-visual-code-input w-full bg-obsidian border border-borderSubtle text-[9px] font-mono text-zinc-400 rounded p-1 resize-y" data-idx="${idx}">${escapeHtml(sc.visual_code)}</textarea>
+        </div>
+      </div>
+    `;
+  }
+
   const type = sc.layout || sc.type || '';
 
   if (type === 'terminal_code_stream') {
@@ -749,6 +733,14 @@ function attachSceneListeners() {
     inp.addEventListener('input', (e) => {
       const idx = parseInt(e.target.dataset.idx);
       currentStoryboard.scenes[idx].video_prompt = e.target.value;
+      syncStoryboardJson();
+    });
+  });
+
+  document.querySelectorAll('.scene-visual-code-input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.idx);
+      currentStoryboard.scenes[idx].visual_code = e.target.value;
       syncStoryboardJson();
     });
   });

@@ -49,6 +49,10 @@ def generate_motion_html(storyboard: dict) -> str:
 
     # Dynamic Archetype Selector — 100% decoupled from position!
     def pick_archetype(sc: dict, idx: int, total: int, gen: str) -> str:
+        # 0. Autonomous AI Generated Visual Code (Zero Templates)
+        if sc.get("visual_code"):
+            return "bespoke_ai"
+
         layout = sc.get("layout", "").lower()
         sc_type = sc.get("type", "").lower()
         comb = f"{layout} {sc_type}"
@@ -483,6 +487,123 @@ def generate_motion_html(storyboard: dict) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Bespoke AI Scene Generator (100% Autonomous Vector Visuals & Animations)
+# ─────────────────────────────────────────────────────────────────────────────
+def _scene_bespoke_ai(
+    sid, pfx, idx, total_scenes, sc, st, en, dur,
+    is_vertical, width, height,
+    brand_name, web_url, bg, fg, muted, card_border,
+    primary_color, badge, headline, subtext,
+    pills, metrics, features
+):
+    visual_code = sc.get("visual_code", "")
+    anim_css = sc.get("animation_css", "")
+    camera_note = sc.get("camera", "Cinematic Angle")
+    lighting_note = sc.get("lighting", "Studio Lighting")
+
+    if is_vertical:
+        layout_style = f"""
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 100px 50px 80px 50px;
+            text-align: center;
+        """
+        vis_box_size = "width: 860px; height: 860px;"
+        head_size = "font-size: 56px; line-height: 1.1;"
+        sub_size = "font-size: 24px; max-width: 760px;"
+    else:
+        layout_style = f"""
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            align-items: center;
+            gap: 60px;
+            padding: 80px 110px;
+        """
+        vis_box_size = "width: 100%; height: 580px;"
+        head_size = "font-size: 58px; line-height: 1.1;"
+        sub_size = "font-size: 22px; max-width: 680px;"
+
+    markup = f"""
+    <div id="{sid}" class="scene" style="position: absolute; inset: 0; width: {width}px; height: {height}px; background-color: {bg}; {layout_style}">
+        <!-- Text & Narrative Column -->
+        <div style="display: flex; flex-direction: column; justify-content: center; gap: 24px; z-index: 10;">
+            <div id="{pfx}_badge" style="display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 6px 14px; border-radius: 9999px; background: rgba(255,255,255,0.06); border: 1px solid {card_border}; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; letter-spacing: 1.5px; color: {primary_color}; text-transform: uppercase;">
+                <span style="width: 7px; height: 7px; border-radius: 50%; background: {primary_color};"></span>
+                <span>{html.escape(badge)}</span>
+            </div>
+
+            <h1 id="{pfx}_headline" style="{head_size} font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -1.5px; color: {fg};">
+                {html.escape(headline)}
+            </h1>
+
+            <p id="{pfx}_subtext" style="{sub_size} font-family: 'Plus Jakarta Sans', sans-serif; color: {muted}; line-height: 1.45; font-weight: 400;">
+                {html.escape(subtext)}
+            </p>
+
+            <div style="display: flex; align-items: center; gap: 16px; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: {muted};">
+                <span>ANGLE // {html.escape(str(camera_note)[:36])}</span>
+                {f'<span style="opacity: 0.4;">|</span><span>{html.escape(brand_name)}</span>' if brand_name else ''}
+            </div>
+        </div>
+
+        <!-- Bespoke AI Visual Code Container -->
+        <div id="{pfx}_visual_stage" style="{vis_box_size} display: flex; align-items: center; justify-content: center; position: relative; border-radius: 20px; background: radial-gradient(circle at center, rgba(255,255,255,0.03) 0%, transparent 70%); border: 1px solid {card_border}; overflow: hidden; padding: 30px;">
+            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                {visual_code}
+            </div>
+        </div>
+    </div>
+    """
+
+    css = f"""
+    #{sid} {{
+        will-change: transform, opacity;
+    }}
+    #{pfx}_visual_stage svg {{
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        overflow: visible;
+    }}
+    {anim_css}
+    """
+
+    js = f"""
+      if (idx === {idx}) {{
+        const dur = {dur};
+        const p = clamp(tScene / dur, 0, 1);
+        const badge = document.getElementById('{pfx}_badge');
+        const head = document.getElementById('{pfx}_headline');
+        const sub = document.getElementById('{pfx}_subtext');
+        const vis = document.getElementById('{pfx}_visual_stage');
+
+        if (badge) badge.style.opacity = clamp(tScene * 4, 0, 1).toString();
+        if (head) {{
+            const springH = spring(clamp((tScene - 0.1) * 2.5, 0, 1));
+            head.style.opacity = clamp(tScene * 3.5, 0, 1).toString();
+            head.style.transform = `translateY(${{lerp(24, 0, springH)}}px)`;
+        }}
+        if (sub) {{
+            sub.style.opacity = clamp((tScene - 0.25) * 3, 0, 1).toString();
+        }}
+        if (vis) {{
+            const springV = spring(clamp(tScene * 1.6, 0, 1));
+            const driftScale = lerp(0.92, 1.04, easeOutCubic(p));
+            const floatY = Math.sin(p * Math.PI * 2) * 8;
+            vis.style.opacity = clamp(tScene * 3, 0, 1).toString();
+            vis.style.transform = `scale(${{driftScale}}) translateY(${{floatY}}px)`;
+        }}
+      }}
+    """
+
+    return markup, css, js
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Scene Archetype Router
 # ─────────────────────────────────────────────────────────────────────────────
 def _compile_archetype_scene(
@@ -494,6 +615,10 @@ def _compile_archetype_scene(
 ):
     sid = f"scene-{idx}"
     pfx = f"s{idx}"
+
+    # 1. 100% Autonomous AI Synthesis (Zero Templates)
+    if sc.get("visual_code") or archetype == "bespoke_ai":
+        return _scene_bespoke_ai(sid, pfx, idx, total_scenes, sc, st, en, dur, is_vertical, width, height, brand_name, web_url, bg, fg, muted, card_border, primary_color, badge, headline, subtext, pills, metrics, features)
 
     if archetype == "kinetic_manifesto":
         return _scene_kinetic_manifesto(sid, pfx, idx, total_scenes, sc, st, en, dur, is_vertical, width, height, brand_name, web_url, bg, fg, muted, card_border, primary_color, badge, headline, subtext, pills, metrics, features)

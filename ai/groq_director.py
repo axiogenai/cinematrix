@@ -53,44 +53,47 @@ class GroqCreativeDirector:
         if duration < 4 or duration > 180:
             raise CreativeDirectorError("Choose a duration between 4 and 180 seconds.")
 
-        system_prompt = """You are CineMatrix's independent film director, cinematographer, and editor.
-Invent an original visual treatment from the user's brief. Do not choose from a menu of templates.
-Do not force a fixed opening, middle, or ending. The genre, story, product, emotional arc, and
-duration must determine the structure. For abstract, documentary, narrative, product, travel,
-fashion, science-fiction, or other prompts, choose the visual language that actually fits.
+        system_prompt = """You are CineMatrix AI's autonomous film director, cinematographer, and generative visual coder.
+You invent an original visual treatment and bespoke visual code from the user's brief.
+STRICT RULE: Do NOT use fixed templates, canned archetypes, or presets. Every single visual element, vector illustration, layout structure, typography treatment, and animation must be invented specifically for the user's prompt.
 
 Return only valid JSON with this schema:
 {
-  "title": "specific film title",
-  "logline": "one sentence describing the film's idea",
-  "visual_style": "cohesive visual treatment",
-  "genre": "inferred genre",
-  "mood": "emotional direction",
+  "title": "specific original film title",
+  "logline": "one sentence describing the film's creative thesis",
+  "visual_style": "cohesive visual treatment and color language",
+  "genre": "inferred genre (e.g. Artisanal Culinary, High-Tech Launch, Luxury Fashion, Documentary, Automotive, Sports)",
+  "mood": "emotional and soundtrack direction (cinematic_tech, minimalist_apple, high_energy_saas, cyber_pulse, or luxury_ambient)",
+  "aspect_ratio": "16:9, 9:16, 1:1, or 4:5",
   "negative_prompt": "visual defects to avoid",
+  "palette": {
+    "bg": "#09090b",
+    "surface": "#141419",
+    "accent": "#f4f4f5",
+    "text": "#f4f4f5"
+  },
   "scenes": [
     {
-      "duration": 4.0,
-      "video_prompt": "a complete standalone generative-video prompt describing visible subjects, action, environment, composition, motion and temporal development",
-      "camera": "specific framing, lens feel, camera movement and movement speed",
+      "duration": 3.5,
+      "badge": "01 // CHAPTER OR TECHNICAL METRIC",
+      "headline": "Powerful Scene Headline",
+      "subtext": "Supporting explanation or narrative line",
+      "camera": "specific framing, lens feel, camera movement and speed",
       "lighting": "specific light source, direction, contrast and atmosphere",
-      "visual_description": "what the audience sees",
-      "headline": "short optional edit label, not text to generate inside footage",
-      "subtext": "optional edit note",
-      "transition_out": "editorial transition idea"
+      "transition_out": "whip_pan_left, zoom_punch, rotational_snap_3d, shutter_split, circular_iris, or depth_dissolve",
+      "visual_code": "<svg viewBox='0 0 600 400' xmlns='http://www.w3.org/2000/svg'>... bespoke SVG vector art, diagram, illustration, or visual subject created specifically for this scene ...</svg>",
+      "animation_css": "CSS keyframes and classes for elements inside this scene",
+      "video_prompt": "a complete standalone generative-video prompt describing visible subjects, action, environment, composition, motion and temporal development"
     }
   ]
 }
 
-Directing rules:
-- Make a genuine creative interpretation; do not merely rephrase the prompt.
-- Create as many shots as the idea needs for the requested duration, usually 2-10. Do not force a standard shot count or sequence.
-- Each shot must depict a distinct purposeful visual event, not a renamed version of another shot.
-- Every video_prompt must be self-contained, detailed, physically plausible, and usable directly by a text-to-video model without needing previous context.
-- Maintain continuity for recurring characters, wardrobe, objects, location, time of day and color language when the story requires it. Explicitly describe continuity in each relevant shot.
-- Choose shot size, lens character, camera movement, lighting, depth, atmosphere and pacing for the scene's intent.
-- Avoid generic tech grids, floating UI, random charts, fake metrics, generic slogans, fabricated product specifications and arbitrary logos unless the user specifically asks for them.
-- Do not ask the video model to render titles, subtitles, credits, or legible logos. Those belong in post-production.
-- Do not invent factual claims or product details that the user did not provide.
+Directing & Creative Coding rules:
+- Invent a genuine creative interpretation; do not merely rephrase the prompt.
+- Create 2-8 purposeful shots fitting the requested duration.
+- For EVERY shot, generate bespoke 'visual_code' containing valid SVG graphics, vector illustrations, geometry, or visual symbols depicting the subject matter (e.g. for a bakery: oven, bread, flour; for space: rocket, orbit; for a car: chassis, aerodynamics; for finance: charts, order books).
+- Do not repeat the same visual code across scenes; each scene must show a distinct visual progression.
+- In 'animation_css', provide custom CSS keyframes that animate the SVG paths (transform, scale, rotate, opacity, stroke-dashoffset).
 - Return durations whose sum is close to the requested total. Include no markdown or prose outside the JSON.
 """
 
@@ -139,15 +142,26 @@ Directing rules:
             raise CreativeDirectorError("AI returned too many shots (maximum 12). Please retry.")
 
         for index, scene in enumerate(scenes, start=1):
-            if not isinstance(scene, dict) or not str(scene.get("video_prompt", "")).strip():
-                raise CreativeDirectorError(f"AI shot {index} is missing video_prompt. Please regenerate.")
+            if not isinstance(scene, dict):
+                raise CreativeDirectorError(f"AI shot {index} is not a valid dictionary.")
+            
+            # Ensure video_prompt is never empty (fallback to visual_description or headline)
+            if not str(scene.get("video_prompt", "")).strip():
+                scene["video_prompt"] = scene.get("visual_description") or scene.get("headline") or "Cinematic shot with dramatic motion and lighting"
+
             try:
                 scene_duration = float(scene.get("duration", duration / len(scenes)))
             except (TypeError, ValueError):
                 scene_duration = duration / len(scenes)
             scene["duration"] = max(1.0, scene_duration)
-            scene["type"] = "generative_video"
-            scene["layout"] = "generative_video"
+            
+            if scene.get("visual_code"):
+                scene["type"] = "bespoke_ai"
+                scene["layout"] = "bespoke_ai"
+            else:
+                scene.setdefault("type", "bespoke_ai")
+                scene.setdefault("layout", "bespoke_ai")
+
             scene.setdefault("headline", f"Shot {index}")
             scene.setdefault("visual_description", scene["video_prompt"])
             scene.setdefault("camera", "cinematic camera movement appropriate to the action")
